@@ -110,7 +110,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import Layout from '../components/layout/Layout.vue'
-import Modal from '../components/ui/Modal.vue'
+// import Modal from '../components/ui/Modal.vue'
 import OrderForm from '../components/orders/OrderForm.vue'
 import { useOrderStore } from '../stores/orderStore'
 

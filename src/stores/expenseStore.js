@@ -3,13 +3,9 @@ import { ref, computed } from 'vue'
 
 export const useExpenseStore = defineStore('expenses', () => {
   const expenses = ref(JSON.parse(localStorage.getItem('expenses')) || [])
-
-  const expenseCategories = ref([
-    'Ingredients',
-    'Gas',
-    'Rent',
-    'Utilities',
-    'Other'
+  
+  const expenseCategories = ref(JSON.parse(localStorage.getItem('expenseCategories')) || [
+    'Ingredients', 'Gas', 'Rent', 'Utilities', 'Other'
   ])
 
   const totalExpenses = computed(() => {
@@ -63,6 +59,4 @@ export const useExpenseStore = defineStore('expenses', () => {
     deleteExpense,
     getExpensesByDateRange
   }
-}, {
-  persist: true
-})
+}, { persist: true })
