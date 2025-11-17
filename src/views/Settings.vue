@@ -1,9 +1,9 @@
 <template>
   <Layout>
-    <div class="max-w-5xl p-6 mx-auto space-y-6">
+    <div class="p-6 space-y-6 max-w-5xl mx-auto">
       
       <!-- Tabs -->
-      <div class="p-4 bg-white shadow-sm rounded-xl">
+      <div class="bg-white rounded-xl shadow-sm p-4">
         <div class="flex flex-wrap space-x-1">
           <button 
             v-for="tab in tabs" 
@@ -42,20 +42,20 @@
           @click="openProfileModal"
           class="px-6 py-2 font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700"
         >
-          ✏️ Update Profile
+        Update Profile
         </button>
 
         <!-- Logout Button (MOVED HERE) -->
         <div class="flex items-center justify-between p-6 mt-8 rounded-lg bg-red-50">
           <div>
-            <h3 class="font-semibold text-red-800">Sign Out</h3>
-            <p class="text-sm text-red-600">Sign out of your account</p>
+            <h3 class="font-semibold text-red-800">Logout</h3>
+            <p class="text-sm text-red-600">Logout of your account</p>
           </div>
           <button 
             @click="logout"
             class="px-6 py-2 font-medium text-white bg-red-600 rounded-lg hover:bg-red-700"
           >
-            🚪 Logout
+          Logout
           </button>
         </div>
       </div>
@@ -132,15 +132,17 @@
             <div class="flex space-x-2">
               <button 
                 @click="startEdit('order', cat.id)"
-                class="text-blue-600 hover:text-blue-800"
+                class="text-indigo-600 hover:text-indigo-800"
+                title="Edit"
               >
-                ✏️
+                <font-awesome-icon icon="edit" class="w-4 h-4" />
               </button>
               <button 
                 @click="deleteCategory('order', cat.id)"
                 class="text-red-600 hover:text-red-800"
+                title="Delete"
               >
-                🗑️
+                <font-awesome-icon icon="trash" class="w-4 h-4" />
               </button>
             </div>
           </div>
@@ -176,15 +178,17 @@
             <div class="flex space-x-2">
               <button 
                 @click="startEdit('expense', cat)"
-                class="text-blue-600 hover:text-blue-800"
+                class="text-indigo-600 hover:text-indigo-800"
+                title="Edit"
               >
-                ✏️
+                <font-awesome-icon icon="edit" class="w-4 h-4" />
               </button>
               <button 
                 @click="deleteCategory('expense', cat)"
                 class="text-red-600 hover:text-red-800"
+                title="Delete"
               >
-                🗑️
+                <font-awesome-icon icon="trash" class="w-4 h-4" />
               </button>
             </div>
           </div>
@@ -220,15 +224,17 @@
             <div class="flex space-x-2">
               <button 
                 @click="startEdit('recipe', cat)"
-                class="text-blue-600 hover:text-blue-800"
+                class="text-indigo-600 hover:text-indigo-800"
+                title="Edit"
               >
-                ✏️
+                <font-awesome-icon icon="edit" class="w-4 h-4" />
               </button>
               <button 
                 @click="deleteCategory('recipe', cat)"
                 class="text-red-600 hover:text-red-800"
+                title="Delete"
               >
-                🗑️
+                <font-awesome-icon icon="trash" class="w-4 h-4" />
               </button>
             </div>
           </div>
@@ -412,7 +418,7 @@ const deleteCategory = (type, id) => {
 }
 
 const logout = () => {
-  if (confirm('Sign out?')) {
+  if (confirm('Logout?')) {
     authStore.logout()
     router.push('/login')
   }

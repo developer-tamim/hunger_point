@@ -34,7 +34,7 @@
           <h2 class="text-xl font-semibold">Today's Orders</h2>
           <div class="text-right">
             <p class="text-sm text-gray-600">Total Orders: {{ filteredOrders.length }}</p>
-            <p class="text-lg font-bold text-green-600">Total: ${{ dailyTotal.toFixed(2) }}</p>
+            <p class="text-lg font-bold text-green-600">Total: {{ dailyTotal.toFixed(2) }} tk</p>
           </div>
         </div>
 
@@ -57,7 +57,7 @@
                     {{ item.quantity }}x {{ item.name }}
                   </div>
                 </td>
-                <td class="py-3 px-4 font-semibold">${{ order.total.toFixed(2) }}</td>
+                <td class="py-3 px-4 font-semibold">{{ order.total.toFixed(2) }} tk</td>
                 <td class="py-3 px-4 text-sm text-gray-600">
                   {{ formatTime(order.createdAt) }}
                 </td>
@@ -93,7 +93,7 @@
           >
             <div class="text-sm font-medium">{{ date.day }}</div>
             <div v-if="date.hasOrders" class="text-xs text-orange-600">
-              ${{ date.total.toFixed(0) }}
+              {{ date.total.toFixed(0) }} tk
             </div>
           </div>
         </div>

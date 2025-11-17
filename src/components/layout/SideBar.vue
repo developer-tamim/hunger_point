@@ -26,8 +26,10 @@
         class="flex items-center p-3 rounded-lg mb-2 transition-colors hover:bg-orange-50"
         active-class="bg-orange-100 text-orange-600"
       >
-        <span class="text-xl mr-3">{{ item.icon }}</span>
-        <span v-show="!isCollapsed" class="font-medium">{{ item.name }}</span>
+        <!-- <span class="text-xl mr-3">{{ item.icon }}</span>
+        <span v-show="!isCollapsed" class="font-medium">{{ item.name }}</span> -->
+        <font-awesome-icon :icon="item.icon" class="w-5 h-5 mr-3" />
+  <span v-show="!isCollapsed" class="font-medium">{{ item.name }}</span>
       </router-link>
     </nav>
   </aside>
@@ -45,12 +47,20 @@ const props = defineProps({
 
 const emit = defineEmits(['toggle'])
 
+// const menuItems = [
+//   { path: '/dashboard', name: 'Dashboard', icon: '📊' },
+//   { path: '/orders', name: 'Orders', icon: '📋' },
+//   { path: '/expenses', name: 'Expenses', icon: '💸' },
+//   { path: '/recipes', name: 'Recipes', icon: '📖' },
+//   { path: '/settings', name: 'Settings', icon: '⚙️' }
+// ]
+
 const menuItems = [
-  { path: '/dashboard', name: 'Dashboard', icon: '📊' },
-  { path: '/orders', name: 'Orders', icon: '📋' },
-  { path: '/expenses', name: 'Expenses', icon: '💸' },
-  { path: '/recipes', name: 'Recipes', icon: '📖' },
-  { path: '/settings', name: 'Settings', icon: '⚙️' }
+  { path: '/dashboard', name: 'Dashboard', icon: 'list' },
+  { path: '/orders', name: 'Orders', icon: 'bell-concierge' },
+  { path: '/expenses', name: 'Expenses', icon: 'shekel-sign' },
+  { path: '/recipes', name: 'Recipes', icon: 'receipt' },
+  { path: '/settings', name: 'Settings', icon: 'cog' }
 ]
 
 const toggleSidebar = () => {

@@ -36,7 +36,7 @@
           >
             <div>
               <p class="font-medium">{{ item.name }}</p>
-              <p class="text-sm text-gray-600">${{ item.price.toFixed(2) }}</p>
+              <p class="text-sm text-gray-600">{{ item.price.toFixed(2) }} tk</p>
             </div>
             <div class="flex items-center space-x-3">
               <button 
@@ -69,12 +69,12 @@
             class="flex justify-between text-sm"
           >
             <span>{{ item.quantity }}x {{ item.name }}</span>
-            <span>${{ (item.quantity * item.price).toFixed(2) }}</span>
+            <span>{{ (item.quantity * item.price).toFixed(2) }} tk</span>
           </div>
           <div class="border-t pt-2 mt-2">
             <div class="flex justify-between font-semibold">
               <span>Total:</span>
-              <span class="text-orange-600">${{ orderTotal.toFixed(2) }}</span>
+              <span class="text-orange-600">{{ orderTotal.toFixed(2) }} tk</span>
             </div>
           </div>
         </div>

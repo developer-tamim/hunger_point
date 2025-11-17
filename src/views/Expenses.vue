@@ -5,12 +5,12 @@
       <!-- Total Expenses (Top) -->
       <div class="p-8 text-center bg-white shadow-sm rounded-xl">
         <div class="flex items-center justify-center space-x-4">
-          <div class="p-4 bg-red-100 rounded-full">
+          <!-- <div class="p-4 bg-red-100 rounded-full">
             <span class="text-3xl">💸</span>
-          </div>
+          </div> -->
           <div>
             <p class="mb-1 text-sm text-gray-600">Total Expenses</p>
-            <p class="text-4xl font-bold text-red-600">${{ expenseStore.totalExpenses.toFixed(2) }}</p>
+            <p class="text-4xl font-bold text-red-600">{{ expenseStore.totalExpenses.toFixed(2) }} tk</p>
           </div>
         </div>
       </div>
@@ -24,7 +24,7 @@
             <!-- Amount -->
             <div>
               <label class="block mb-1 text-sm font-medium">Amount *</label>
-              <input v-model="form.amount" type="number" step="0.01" placeholder="0.00" required
+              <input v-model="form.amount" type="number" step="01" placeholder="00" required
                 class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" />
             </div>
 
@@ -97,7 +97,7 @@
               </p>
             </div>
             <div class="flex items-center space-x-4">
-              <span class="font-semibold text-red-600">${{ expense.amount.toFixed(2) }}</span>
+              <span class="font-semibold text-red-600">{{ expense.amount.toFixed(2) }} tk</span>
               <button @click="deleteExpense(expense.id)" class="text-sm text-red-600 hover:text-red-800">
                 Delete
               </button>
