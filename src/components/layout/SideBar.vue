@@ -60,6 +60,7 @@ const menuItems = [
   { path: '/orders', name: 'Orders', icon: 'bell-concierge' },
   { path: '/expenses', name: 'Expenses', icon: 'shekel-sign' },
   { path: '/recipes', name: 'Recipes', icon: 'receipt' },
+  { path: '/history', name: 'History', icon: 'clock-rotate-left' },
   { path: '/settings', name: 'Settings', icon: 'cog' }
 ]
 

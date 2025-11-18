@@ -10,13 +10,13 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { 
   faUser, faPlus, faEdit, faTrash, faSignOutAlt, faCog, 
-  faUtensils, faList, faMoneyBillWave, faBook, faEllipsisV, faBellConcierge, faReceipt, faShekelSign
+  faUtensils, faList, faMoneyBillWave, faBook, faEllipsisV, faBellConcierge, faReceipt, faShekelSign, faClockRotateLeft
 } from '@fortawesome/free-solid-svg-icons'
 
 // Add icons to the library
 library.add(
   faUser, faPlus, faEdit, faTrash, faSignOutAlt, faCog,
-  faUtensils, faList, faMoneyBillWave, faBook, faEllipsisV, faBellConcierge, faReceipt, faShekelSign
+  faUtensils, faList, faMoneyBillWave, faBook, faEllipsisV, faBellConcierge, faReceipt, faShekelSign, faClockRotateLeft
 )
 
 
