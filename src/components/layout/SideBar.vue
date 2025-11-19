@@ -8,28 +8,36 @@
       <!-- logo / brand area -->
 <div v-show="!isCollapsed" class="flex items-center space-x-2">
   <router-link to="/dashboard" class="flex items-center space-x-2">
-    <img :src="logoUrl" alt="Hunger Point" class="h-8 w-auto object-contain" />
-    <span class="text-xl font-bold text-orange-600">Hunger Point</span>
+    <img :src="logoUrl" alt="Hunger Point" class="object-contain w-auto h-8" />
+    <!-- <span class="text-xl font-bold text-orange-600">Hunger Point</span> -->
   </router-link>
+    <button
+        @click="toggleSidebar"
+        class="p-2 transition-colors rounded-lg hover:bg-gray-100"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
 </div>
 
 <!-- collapsed logo only -->
 <router-link
   v-show="isCollapsed"
   to="/dashboard"
-  class="mx-auto p-2 rounded-lg hover:bg-gray-100 transition-colors"
+  class="p-2 mx-auto transition-colors rounded-lg hover:bg-gray-100"
 >
-  <img :src="logoUrl" alt="Hunger Point" class="h-6 w-auto object-contain" />
+  <img :src="logoUrl" alt="Hunger Point" class="object-contain w-auto h-6" />
 </router-link>
       </div>
-      <button
+      <!-- <button
         @click="toggleSidebar"
-        class="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+        class="p-2 transition-colors rounded-lg hover:bg-gray-100"
       >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
         </svg>
-      </button>
+      </button> -->
 
     <!-- NAVIGATION -->
     <nav class="p-2">
@@ -37,8 +45,8 @@
         v-for="item in menuItems"
         :key="item.path"
         :to="item.path"
-        class="flex items-center p-3 rounded-lg mb-2 transition-colors hover:bg-orange-50"
-        active-class="bg-orange-100 text-orange-600"
+        class="flex items-center p-3 mb-2 transition-colors rounded-lg hover:bg-orange-50"
+        active-class="text-orange-600 bg-orange-100"
       >
         <font-awesome-icon :icon="item.icon" class="w-5 h-5 mr-3" />
         <span v-show="!isCollapsed" class="font-medium">{{ item.name }}</span>
