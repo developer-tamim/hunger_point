@@ -81,7 +81,7 @@
       </div>
 
       <!-- Calendar View -->
-      <div class="bg-white rounded-xl shadow-sm p-6">
+      <!-- <div class="bg-white rounded-xl shadow-sm p-6">
         <h2 class="text-xl font-semibold mb-6">Order History (Calendar)</h2>
         <div class="grid grid-cols-7 gap-2 mb-4">
           <div v-for="day in ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']" :key="day"
@@ -96,7 +96,7 @@
             <div v-if="date.hasOrders" class="text-xs text-orange-600">{{ date.total.toFixed(0) }}</div>
           </div>
         </div>
-      </div>
+      </div> -->
     </div>
 
     <!--  INLINE  ORDER  FORM  MODAL  -->
