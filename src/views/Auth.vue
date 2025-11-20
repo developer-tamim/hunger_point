@@ -1,10 +1,8 @@
 <template>
   <div class="flex items-center justify-center min-h-screen bg-gray-50">
     <div class="w-full max-w-md p-8 bg-white shadow-lg rounded-xl">
-      <div class="mb-8 text-center">
-        <div class="mb-2 text-4xl">🍔</div>
-        <h1 class="text-2xl font-bold text-orange-600">Hunger Point</h1>
-        <p class="mt-2 text-sm text-gray-600">Food Cart Management System</p>
+      <div class="mb-8 flex justify-center items-center">
+        <img :src="logoUrl" alt="Hunger Point" class="object-contain w-auto h-[100px] mx-auto" />
       </div>
 
       <!-- Login Form -->
@@ -105,6 +103,7 @@
 import { ref } from 'vue'
 import { useAuthStore } from '../stores/authStore'
 import { useRouter } from 'vue-router'
+import logoUrl from '../assets/hunger_point.png' 
 
 const authStore = useAuthStore()
 const router = useRouter()
