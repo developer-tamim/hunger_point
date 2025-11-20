@@ -21,7 +21,7 @@
             </option>
           </select>
           <button
-            @click="showModal = true"
+            @click="openAddModal"
             class="px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 font-medium"
           >
             + New Order
@@ -66,11 +66,18 @@
                   </div>
                 </td>
                 <td class="py-3 px-4 font-semibold">{{ order.total.toFixed(2) }} tk</td>
-                <td class="py-3 px-4 text-sm text-gray-600">
-                  {{ formatTime(order.createdAt) }}
-                </td>
-                <td class="py-3 px-4">
-                  <button class="text-red-600 hover:text-red-800 text-sm" @click="deleteOrder(order.id)">
+                <td class="py-3 px-4 text-sm text-gray-600">{{ formatTime(order.createdAt) }}</td>
+                <td class="py-3 px-4 flex space-x-2">
+                  <button
+                    @click="editOrder(order)"
+                    class="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    @click="deleteOrder(order.id)"
+                    class="text-red-600 hover:text-red-800 text-sm font-medium"
+                  >
                     Delete
                   </button>
                 </td>
@@ -79,27 +86,9 @@
           </table>
         </div>
       </div>
-
-      <!-- Calendar View -->
-      <!-- <div class="bg-white rounded-xl shadow-sm p-6">
-        <h2 class="text-xl font-semibold mb-6">Order History (Calendar)</h2>
-        <div class="grid grid-cols-7 gap-2 mb-4">
-          <div v-for="day in ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']" :key="day"
-               class="text-center font-medium text-gray-600 py-2">{{ day }}</div>
-        </div>
-        <div class="grid grid-cols-7 gap-2">
-          <div v-for="date in calendarDates" :key="date.date"
-               class="border rounded-lg p-2 cursor-pointer hover:bg-orange-50 transition-colors"
-               :class="{ 'bg-orange-100': date.hasOrders }"
-               @click="selectDate(date.date)">
-            <div class="text-sm font-medium">{{ date.day }}</div>
-            <div v-if="date.hasOrders" class="text-xs text-orange-600">{{ date.total.toFixed(0) }}</div>
-          </div>
-        </div>
-      </div> -->
     </div>
 
-    <!--  INLINE  ORDER  FORM  MODAL  -->
+    <!--  SCROLLABLE  ORDER  FORM  MODAL  -->
     <transition
       enter-active-class="transition-all duration-300 ease-out"
       enter-from-class="opacity-0 scale-95"
@@ -109,16 +98,16 @@
       leave-to-class="opacity-0 scale-95"
     >
       <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm">
-        <div class="w-full max-w-2xl bg-white shadow-xl rounded-xl overflow-hidden">
+        <div class="w-full max-w-2xl bg-white shadow-xl rounded-xl overflow-hidden flex flex-col max-h-[90vh]">
 
-          <!-- header -->
-          <div class="flex items-center justify-between p-6 border-b">
-            <h3 class="text-xl font-semibold">Add New Order</h3>
-            <button @click="showModal = false" class="text-2xl leading-none text-gray-500 hover:text-gray-700">×</button>
+          <!-- header (fixed) -->
+          <div class="flex items-center justify-between p-6 border-b shrink-0">
+            <h3 class="text-xl font-semibold">{{ editingOrder ? 'Edit Order' : 'Add New Order' }}</h3>
+            <button @click="closeModal" class="text-2xl leading-none text-gray-500 hover:text-gray-700">×</button>
           </div>
 
-          <!-- body (OrderForm inline) -->
-          <div class="p-6 space-y-4">
+          <!-- scrollable body -->
+          <div class="flex-1 overflow-y-auto p-6 space-y-4">
             <!-- category picker -->
             <div>
               <label class="block text-sm font-medium mb-2">Category</label>
@@ -141,10 +130,10 @@
               </div>
             </div>
 
-            <!-- items -->
+            <!-- items (scrollable sub-section) -->
             <div v-if="selectedCategory">
               <label class="block text-sm font-medium mb-2">Items</label>
-              <div class="space-y-3 max-h-60 overflow-y-auto">
+              <div class="space-y-3 max-h-[40vh] overflow-y-auto">
                 <div
                   v-for="item in availableItems"
                   :key="item.id"
@@ -185,25 +174,25 @@
                 </div>
               </div>
             </div>
+          </div>
 
-            <!-- actions -->
-            <div class="flex justify-end space-x-3 pt-4 border-t">
-              <button
-                type="button"
-                @click="showModal = false"
-                class="px-4 py-2 border rounded-lg hover:bg-gray-50 font-medium"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                :disabled="!selectedItems.length"
-                @click="submitOrder"
-                class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:bg-gray-400 font-medium"
-              >
-                Place Order
-              </button>
-            </div>
+          <!-- fixed footer -->
+          <div class="flex justify-end space-x-3 p-6 border-t shrink-0">
+            <button
+              type="button"
+              @click="closeModal"
+              class="px-4 py-2 border rounded-lg hover:bg-gray-50 font-medium"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              :disabled="!selectedItems.length"
+              @click="editingOrder ? updateOrder() : submitOrder()"
+              class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:bg-gray-400 font-medium"
+            >
+              {{ editingOrder ? 'Update Order' : 'Place Order' }}
+            </button>
           </div>
         </div>
       </div>
@@ -222,6 +211,10 @@ const selectedCategory = ref('')
 const showModal        = ref(false)
 const selectedDate     = ref(null)
 
+/* ---------- Edit State ---------- */
+const editingOrder   = ref(null)
+const selectedEditId = ref(null)
+
 /* ---------- Store ---------- */
 const orderStore = useOrderStore()
 
@@ -235,24 +228,6 @@ const filteredOrders = computed(() => {
 
 const dailyTotal = computed(() => filteredOrders.value.reduce((sum, o) => sum + o.total, 0))
 
-const calendarDates = computed(() => {
-  const dates = []
-  const today = new Date()
-  const year = today.getFullYear(), month = today.getMonth()
-  const firstDay = new Date(year, month, 1).getDay()
-  const daysInMonth = new Date(year, month + 1, 0).getDate()
-
-  for (let i = 0; i < firstDay; i++) dates.push({ day: '', date: null, hasOrders: false, total: 0 })
-  for (let day = 1; day <= daysInMonth; day++) {
-    const date   = new Date(year, month, day).toISOString()
-    const orders = orderStore.getOrdersByDate(date)
-    const total  = orders.reduce((sum, o) => sum + o.total, 0)
-    dates.push({ day, date, hasOrders: orders.length > 0, total })
-  }
-  return dates
-})
-
-/* ---------- Modal Form Logic ---------- */
 const availableItems = computed(() => {
   const cat = orderStore.categories.find(c => c.name === selectedCategory.value)
   if (!cat) return []
@@ -280,6 +255,39 @@ const orderTotal = computed(() =>
   selectedItems.value.reduce((sum, it) => sum + it.quantity * it.price, 0)
 )
 
+/* ---------- Modal Functions ---------- */
+const openAddModal = () => {
+  editingOrder.value   = null
+  selectedEditId.value = null
+  selectedCategory.value = ''
+  selectedItems.value    = []
+  showModal.value        = true
+}
+
+const editOrder = (order) => {
+  selectedCategory.value = order.category
+  selectedItems.value    = order.items.map(it => ({ ...it }))
+  editingOrder.value     = order
+  selectedEditId.value   = order.id
+  showModal.value        = true
+}
+
+const updateOrder = () => {
+  if (!selectedItems.value.length) return
+  const idx = orderStore.orders.findIndex(o => o.id === selectedEditId.value)
+  if (idx === -1) return
+
+  orderStore.orders[idx] = {
+    ...editingOrder.value,
+    category : selectedCategory.value,
+    items    : selectedItems.value,
+    total    : orderTotal.value,
+    updatedAt: new Date().toISOString()
+  }
+  localStorage.setItem('orders', JSON.stringify(orderStore.orders))
+  closeModal()
+}
+
 const submitOrder = () => {
   if (!selectedItems.value.length) return
   orderStore.addOrder({
@@ -287,13 +295,17 @@ const submitOrder = () => {
     items: selectedItems.value,
     total: orderTotal.value
   })
-  // reset & close
-  selectedCategory.value = ''
-  selectedItems.value    = []
-  showModal.value        = false
+  closeModal()
 }
 
-/* ---------- Utilities ---------- */
+const closeModal = () => {
+  showModal.value        = false
+  selectedCategory.value = ''
+  selectedItems.value    = []
+  editingOrder.value     = null
+  selectedEditId.value   = null
+}
+
 const formatTime = ts => new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 
 const deleteOrder = id => {
