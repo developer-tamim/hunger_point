@@ -24,7 +24,7 @@
             <!-- Amount -->
             <div>
               <label class="block mb-1 text-sm font-medium">Amount *</label>
-              <input v-model="form.amount" type="number" step="01" placeholder="00" required
+              <input v-model="form.amount" type="number" step="0" placeholder="00" required
                 class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" />
             </div>
 
@@ -41,14 +41,14 @@
             </div>
           </div>
 
-          <!-- Description -->
-          <div>
-            <label class="block mb-1 text-sm font-medium">Description *</label>
-            <textarea v-model="form.description" rows="2" placeholder="What was this expense for?" required
-              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"></textarea>
-          </div>
-
           <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <!-- Date -->
+            <div>
+              <label class="block mb-1 text-sm font-medium">Date *</label>
+              <input v-model="form.date" type="date" required
+                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" />
+            </div>
+
             <!-- Vendor -->
             <div>
               <label class="block mb-1 text-sm font-medium">Vendor/Supplier</label>
@@ -56,12 +56,13 @@
                 class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" />
             </div>
 
-            <!-- Date -->
-            <div>
-              <label class="block mb-1 text-sm font-medium">Date *</label>
-              <input v-model="form.date" type="date" required
-                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" />
-            </div>
+          </div>
+
+          <!-- Description -->
+          <div>
+            <label class="block mb-1 text-sm font-medium">Description *</label>
+            <textarea v-model="form.description" rows="2" placeholder="What was this expense for?" required
+              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"></textarea>
           </div>
 
           <!-- Submit -->
