@@ -61,7 +61,8 @@
       </div>
 
       <!-- Profile Update Modal -->
-      <div v-if="showProfileModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+      <!-- <div v-if="showProfileModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50"> -->
+      <div v-if="showProfileModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm">
         <div class="w-full max-w-md bg-white shadow-xl rounded-xl">
           <div class="flex items-center justify-between p-6 border-b">
             <h3 class="text-xl font-semibold">Update Profile</h3>
@@ -167,6 +168,20 @@
       <!-- Expense Categories Tab -->
       <div v-if="activeTab === 'expense-cats'" class="p-6 space-y-4 bg-white shadow-sm rounded-xl">
         <h2 class="mb-4 text-xl font-semibold">Expense Categories</h2>
+        <form @submit.prevent="addCategory('expense')" class="flex gap-2 pt-4 border-t">
+          <input 
+            v-model="newExpenseCat"
+            type="text" 
+            placeholder="Add new category"
+            class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+          />
+          <button 
+            type="submit"
+            class="px-4 py-2 font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700"
+          >
+            Add
+          </button>
+        </form>
         
         <div class="space-y-3 overflow-y-auto max-h-80">
           <div 
@@ -193,10 +208,14 @@
             </div>
           </div>
         </div>
+      </div>
 
-        <form @submit.prevent="addCategory('expense')" class="flex gap-2 pt-4 border-t">
+      <!-- Recipe Categories Tab -->
+      <div v-if="activeTab === 'recipe-cats'" class="p-6 space-y-4 bg-white shadow-sm rounded-xl">
+        <h2 class="mb-4 text-xl font-semibold">Recipe Categories</h2>
+        <form @submit.prevent="addCategory('recipe')" class="flex gap-2 pt-4 border-t">
           <input 
-            v-model="newExpenseCat"
+            v-model="newRecipeCat"
             type="text" 
             placeholder="Add new category"
             class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
@@ -208,11 +227,6 @@
             Add
           </button>
         </form>
-      </div>
-
-      <!-- Recipe Categories Tab -->
-      <div v-if="activeTab === 'recipe-cats'" class="p-6 space-y-4 bg-white shadow-sm rounded-xl">
-        <h2 class="mb-4 text-xl font-semibold">Recipe Categories</h2>
         
         <div class="space-y-3 overflow-y-auto max-h-80">
           <div 
@@ -239,21 +253,6 @@
             </div>
           </div>
         </div>
-
-        <form @submit.prevent="addCategory('recipe')" class="flex gap-2 pt-4 border-t">
-          <input 
-            v-model="newRecipeCat"
-            type="text" 
-            placeholder="Add new category"
-            class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-          />
-          <button 
-            type="submit"
-            class="px-4 py-2 font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700"
-          >
-            Add
-          </button>
-        </form>
       </div>
     </div>
   </Layout>

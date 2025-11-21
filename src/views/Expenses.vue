@@ -88,7 +88,7 @@
                class="flex items-center justify-between p-4 rounded-lg bg-gray-50">
             <div class="flex-1">
               <div class="flex items-center space-x-3">
-                <span class="px-2 py-1 text-xs font-medium bg-white rounded-full">
+                <span class="px-2 py-1 text-xs font-medium bg-slate-400 rounded-full">
                   {{ expense.category }}
                 </span>
                 <p class="font-medium">{{ expense.description }}</p>
