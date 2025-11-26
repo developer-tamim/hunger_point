@@ -138,11 +138,7 @@
                 class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
               >
                 <option value="">Select Category *</option>
-                <option value="Burger">Burger</option>
-                <option value="Drinks">Drinks</option>
-                <option value="Snacks">Snacks</option>
-                <option value="Dessert">Dessert</option>
-                <option value="Other">Other</option>
+                <option v-for="cat in recipeStore.recipeCategories" :key="cat" :value="cat">{{ cat }}</option>
               </select>
             </div>
 

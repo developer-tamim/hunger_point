@@ -3,6 +3,7 @@ import { ref } from 'vue'
 
 export const useRecipeStore = defineStore('recipes', () => {
   const recipes = ref(JSON.parse(localStorage.getItem('recipes')) || [])
+  const recipeCategories = ref(JSON.parse(localStorage.getItem('recipeCategories')) || ['Burger', 'Drinks', 'Snacks', 'Dessert', 'Other'])
 
   const addRecipe = (recipeData) => {
     const recipe = {
@@ -32,10 +33,31 @@ export const useRecipeStore = defineStore('recipes', () => {
     localStorage.setItem('recipes', JSON.stringify(recipes.value))
   }
 
+  // Category CRUD
+  const addCategory = (name) => {
+    recipeCategories.value.push(name)
+    localStorage.setItem('recipeCategories', JSON.stringify(recipeCategories.value))
+  }
+
+  const updateCategory = (oldName, newName) => {
+    const index = recipeCategories.value.indexOf(oldName)
+    if (index > -1) {
+      recipeCategories.value[index] = newName
+      localStorage.setItem('recipeCategories', JSON.stringify(recipeCategories.value))
+    }
+  }
+
+  const deleteCategory = (name) => {
+    recipeCategories.value = recipeCategories.value.filter(c => c !== name)
+    localStorage.setItem('recipeCategories', JSON.stringify(recipeCategories.value))
+  }
+
   return {
     recipes,
+    recipeCategories,
     addRecipe,
     updateRecipe,
     deleteRecipe
+    ,addCategory,updateCategory,deleteCategory
   }
 }, { persist: true })

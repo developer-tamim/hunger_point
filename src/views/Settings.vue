@@ -230,7 +230,7 @@
         
         <div class="space-y-3 overflow-y-auto max-h-80">
           <div 
-            v-for="cat in recipeCategories" 
+            v-for="cat in recipeStore.recipeCategories" 
             :key="cat"
             class="flex items-center justify-between p-3 rounded-lg bg-gray-50"
           >
@@ -263,12 +263,14 @@ import { ref, computed } from 'vue'
 import { useAuthStore } from '../stores/authStore'
 import { useOrderStore } from '../stores/orderStore'
 import { useExpenseStore } from '../stores/expenseStore'
+import { useRecipeStore } from '../stores/recipeStore'
 import { useRouter } from 'vue-router'
 import Layout from '../components/layout/Layout.vue'
 
 const authStore = useAuthStore()
 const orderStore = useOrderStore()
 const expenseStore = useExpenseStore()
+const recipeStore = useRecipeStore()
 const router = useRouter()
 
 const activeTab = ref('profile')
@@ -353,7 +355,8 @@ const newOrderCat = ref('')
 const newExpenseCat = ref('')
 const newRecipeCat = ref('')
 
-const recipeCategories = ref(JSON.parse(localStorage.getItem('recipeCategories')) || ['Burger', 'Drinks', 'Snacks', 'Dessert', 'Other'])
+// Using recipe categories from recipeStore now
+// const recipeCategories = ref(JSON.parse(localStorage.getItem('recipeCategories')) || ['Burger', 'Drinks', 'Snacks', 'Dessert', 'Other'])
 
 const addCategory = (type) => {
   const value = type === 'order' ? newOrderCat.value : 
@@ -361,16 +364,13 @@ const addCategory = (type) => {
   
   if (value.trim()) {
     if (type === 'order') {
-      orderStore.categories.push({ id: Date.now(), name: value, icon: '🍔' })
-      localStorage.setItem('categories', JSON.stringify(orderStore.categories))
+      orderStore.addCategory(value, '🍔')
       newOrderCat.value = ''
     } else if (type === 'expense') {
-      expenseStore.expenseCategories.push(value)
-      localStorage.setItem('expenseCategories', JSON.stringify(expenseStore.expenseCategories))
+      expenseStore.addCategory(value)
       newExpenseCat.value = ''
     } else {
-      recipeCategories.value.push(value)
-      localStorage.setItem('recipeCategories', JSON.stringify(recipeCategories.value))
+      recipeStore.addCategory(value)
       newRecipeCat.value = ''
     }
   }
@@ -380,23 +380,11 @@ const startEdit = (type, id) => {
   const newName = prompt('Edit category name:')
   if (newName && newName.trim()) {
     if (type === 'order') {
-      const cat = orderStore.categories.find(c => c.id === id)
-      if (cat) {
-        cat.name = newName
-        localStorage.setItem('categories', JSON.stringify(orderStore.categories))
-      }
+      orderStore.updateCategory(id, { name: newName })
     } else if (type === 'expense') {
-      const index = expenseStore.expenseCategories.indexOf(id)
-      if (index > -1) {
-        expenseStore.expenseCategories[index] = newName
-        localStorage.setItem('expenseCategories', JSON.stringify(expenseStore.expenseCategories))
-      }
+      expenseStore.updateCategory(id, newName)
     } else {
-      const index = recipeCategories.value.indexOf(id)
-      if (index > -1) {
-        recipeCategories.value[index] = newName
-        localStorage.setItem('recipeCategories', JSON.stringify(recipeCategories.value))
-      }
+      recipeStore.updateCategory(id, newName)
     }
   }
 }
@@ -404,14 +392,11 @@ const startEdit = (type, id) => {
 const deleteCategory = (type, id) => {
   if (confirm('Delete category?')) {
     if (type === 'order') {
-      orderStore.categories = orderStore.categories.filter(c => c.id !== id)
-      localStorage.setItem('categories', JSON.stringify(orderStore.categories))
+      orderStore.deleteCategory(id)
     } else if (type === 'expense') {
-      expenseStore.expenseCategories = expenseStore.expenseCategories.filter(c => c !== id)
-      localStorage.setItem('expenseCategories', JSON.stringify(expenseStore.expenseCategories))
+      expenseStore.deleteCategory(id)
     } else {
-      recipeCategories.value = recipeCategories.value.filter(c => c !== id)
-      localStorage.setItem('recipeCategories', JSON.stringify(recipeCategories.value))
+      recipeStore.deleteCategory(id)
     }
   }
 }

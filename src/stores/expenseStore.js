@@ -42,6 +42,25 @@ export const useExpenseStore = defineStore('expenses', () => {
     localStorage.setItem('expenses', JSON.stringify(expenses.value))
   }
 
+  // Category CRUD
+  const addCategory = (name) => {
+    expenseCategories.value.push(name)
+    localStorage.setItem('expenseCategories', JSON.stringify(expenseCategories.value))
+  }
+
+  const updateCategory = (oldName, newName) => {
+    const index = expenseCategories.value.indexOf(oldName)
+    if (index > -1) {
+      expenseCategories.value[index] = newName
+      localStorage.setItem('expenseCategories', JSON.stringify(expenseCategories.value))
+    }
+  }
+
+  const deleteCategory = (name) => {
+    expenseCategories.value = expenseCategories.value.filter(c => c !== name)
+    localStorage.setItem('expenseCategories', JSON.stringify(expenseCategories.value))
+  }
+
   const getExpensesByDateRange = (startDate, endDate) => {
     return expenses.value.filter(expense => {
       const expenseDate = new Date(expense.date)
@@ -57,6 +76,9 @@ export const useExpenseStore = defineStore('expenses', () => {
     addExpense,
     updateExpense,
     deleteExpense,
+    addCategory,
+    updateCategory,
+    deleteCategory,
     getExpensesByDateRange
   }
 }, { persist: true })

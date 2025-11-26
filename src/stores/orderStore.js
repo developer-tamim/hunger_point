@@ -4,7 +4,7 @@ import { ref, computed } from 'vue'
 export const useOrderStore = defineStore('orders', () => {
   const orders = ref(JSON.parse(localStorage.getItem('orders')) || [])
 
-  const categories = ref([
+  const categories = ref(JSON.parse(localStorage.getItem('categories')) || [
     { id: 1, name: 'Burger', icon: '🍔' },
     { id: 2, name: 'Drinks', icon: '🥤' },
     { id: 3, name: 'Snacks', icon: '🍟' }
@@ -39,6 +39,25 @@ export const useOrderStore = defineStore('orders', () => {
     localStorage.setItem('orders', JSON.stringify(orders.value))
   }
 
+  const addCategory = (name, icon = '🍔') => {
+    const newCat = { id: Date.now(), name, icon }
+    categories.value.push(newCat)
+    localStorage.setItem('categories', JSON.stringify(categories.value))
+  }
+
+  const updateCategory = (id, updates) => {
+    const index = categories.value.findIndex(c => c.id === id)
+    if (index !== -1) {
+      categories.value[index] = { ...categories.value[index], ...updates }
+      localStorage.setItem('categories', JSON.stringify(categories.value))
+    }
+  }
+
+  const deleteCategory = (id) => {
+    categories.value = categories.value.filter(c => c.id !== id)
+    localStorage.setItem('categories', JSON.stringify(categories.value))
+  }
+
   const getOrdersByDate = (date) => {
     const targetDate = new Date(date).toDateString()
     return orders.value.filter(order => 
@@ -66,6 +85,9 @@ export const useOrderStore = defineStore('orders', () => {
     totalSalesToday,
     addOrder,
     getOrdersByDate,
+    addCategory,
+    updateCategory,
+    deleteCategory,
     searchOrders
   }
 }, {
