@@ -62,6 +62,7 @@
               <tr class="border-b">
                 <th class="text-left py-3 px-4">Order #</th>
                 <th class="text-left py-3 px-4">Items</th>
+                <th class="text-left py-3 px-4">Subcategory</th>
                 <th class="text-left py-3 px-4">Total</th>
                 <th class="text-left py-3 px-4">Time</th>
                 <th class="text-left py-3 px-4">Actions</th>
@@ -82,6 +83,9 @@
                   >
                     {{ item.quantity }}× {{ item.name }}
                   </div>
+                </td>
+                <td class="py-3 px-4 text-sm text-gray-600">
+                  {{ order.subcategory || '-' }}
                 </td>
                 <td class="py-3 px-4 font-semibold">
                   {{ order.total.toFixed(2) }} tk
@@ -168,7 +172,7 @@
                   v-for="c in orderStore.categories"
                   :key="c.id"
                   type="button"
-                  @click="selectedCategory = c.name"
+                  @click="selectModalCategory(c)"
                   :class="[
                     'p-3 border rounded-lg text-center transition-colors',
                     selectedCategory === c.name
@@ -178,6 +182,25 @@
                 >
                   <div class="text-2xl mb-1">{{ c.icon }}</div>
                   <div class="text-sm font-medium">{{ c.name }}</div>
+                </button>
+              </div>
+            </div>
+
+            <!-- subcategory picker -->
+            <div v-if="selectedCategory && orderStore.categories.find(c => c.name === selectedCategory)?.subcategories?.length" class="pt-4">
+              <label class="block text-sm font-medium mb-2">Subcategory</label>
+              <div class="flex gap-2 flex-wrap">
+                <button
+                  v-for="sc in orderStore.categories.find(c => c.name === selectedCategory).subcategories"
+                  :key="sc"
+                  type="button"
+                  @click="selectedSubCategory = sc"
+                  :class="[
+                    'px-3 py-1 border rounded-lg text-sm transition-colors',
+                    selectedSubCategory === sc ? 'bg-orange-50 border-orange-500' : 'border-gray-300 hover:bg-gray-50'
+                  ]"
+                >
+                  {{ sc }}
                 </button>
               </div>
             </div>
@@ -274,8 +297,10 @@ import { useOrderStore } from "../stores/orderStore";
 /* ---------- Reactive State ---------- */
 const searchQuery = ref("");
 const selectedCategory = ref("");
+const selectedSubCategory = ref("");
 const showModal = ref(false);
 const selectedDate = ref(null);
+const selectedCategoryFilter = ref(""); // Added new filter variable
 
 /* ---------- Edit State ---------- */
 const editingOrder = ref(null);
@@ -310,8 +335,8 @@ const orderStore = useOrderStore();
 const filteredOrders = computed(() => {
   let list = orderStore.todayOrders;
   if (searchQuery.value) list = orderStore.searchOrders(searchQuery.value);
-  if (selectedCategory.value)
-    list = list.filter((o) => o.category === selectedCategory.value);
+  if (selectedCategoryFilter.value) // Updated to use selectedCategoryFilter
+    list = list.filter((o) => o.category === selectedCategoryFilter.value);
   return list;
 });
 
@@ -320,12 +345,20 @@ const dailyTotal = computed(() =>
 );
 
 const availableItems = computed(() => {
-  const cat = orderStore.categories.find(
-    (c) => c.name === selectedCategory.value
-  );
+  const cat = orderStore.categories.find((c) => c.name === selectedCategory.value); // Keep reading from modal selectedCategory
   if (!cat) return [];
-  return orderStore.items.filter((i) => i.categoryId === cat.id);
+  let list = orderStore.items.filter((i) => i.categoryId === cat.id);
+  if (selectedSubCategory.value) {
+    list = list.filter((i) => i.subcategory === selectedSubCategory.value);
+  }
+  return list;
 });
+
+const selectModalCategory = (cat) => {
+  selectedCategory.value = cat.name
+  // reset subcategory when switching categories
+  selectedSubCategory.value = ''
+}
 
 const selectedItems = ref([]);
 
@@ -354,13 +387,15 @@ const orderTotal = computed(() =>
 const openAddModal = () => {
   editingOrder.value = null;
   selectedEditId.value = null;
-  selectedCategory.value = "";
+  selectedCategoryFilter.value = ""; // Reset the filter variable
+  selectedSubCategory.value = "";
   selectedItems.value = [];
   showModal.value = true;
 };
 
 const editOrder = (order) => {
   selectedCategory.value = order.category;
+  selectedSubCategory.value = order.subcategory || '';
   selectedItems.value = order.items.map((it) => ({ ...it }));
   editingOrder.value = order;
   selectedEditId.value = order.id;
@@ -375,6 +410,7 @@ const updateOrder = () => {
   orderStore.orders[idx] = {
     ...editingOrder.value,
     category: selectedCategory.value,
+    subcategory: selectedSubCategory.value || null,
     items: selectedItems.value,
     total: orderTotal.value,
     updatedAt: new Date().toISOString(),
@@ -387,6 +423,7 @@ const submitOrder = () => {
   if (!selectedItems.value.length) return;
   orderStore.addOrder({
     category: selectedCategory.value,
+    subcategory: selectedSubCategory.value || null,
     items: selectedItems.value,
     total: orderTotal.value,
   });
@@ -395,7 +432,7 @@ const submitOrder = () => {
 
 const closeModal = () => {
   showModal.value = false;
-  selectedCategory.value = "";
+  selectedCategoryFilter.value = ""; // Reset the filter variable
   selectedItems.value = [];
   editingOrder.value = null;
   selectedEditId.value = null;

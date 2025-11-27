@@ -121,7 +121,19 @@
 
       <!-- Order Categories Tab -->
       <div v-if="activeTab === 'order-cats'" class="p-6 space-y-4 bg-white shadow-sm rounded-xl">
-        <h2 class="mb-4 text-xl font-semibold">Order Categories</h2>
+        <div class="flex items-center justify-between">
+          <h2 class="mb-4 text-xl font-semibold">Order Categories</h2>
+
+          <!-- Add Category button placed under the list -->
+        <div class="pt-4 flex justify-end">
+          <button
+            @click="openAddOrderModal"
+            class="px-4 py-2 font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700"
+          >
+            Add Category
+          </button>
+        </div>
+        </div>
         
         <div class="space-y-3 overflow-y-auto max-h-80">
           <div 
@@ -129,7 +141,13 @@
             :key="cat.id"
             class="flex items-center justify-between p-3 rounded-lg bg-gray-50"
           >
-            <span class="font-medium">{{ cat.name }}</span>
+            <div>
+              <div class="font-medium">{{ cat.name }}</div>
+                <div class="text-sm text-gray-500">
+                  <span v-if="cat.subcategories && cat.subcategories.length">Sub: {{ cat.subcategories.join(', ') }}</span>
+                  <span v-if="typeof cat.price !== 'undefined'"> • Price: ${{ cat.price }}</span>
+                </div>
+            </div>
             <div class="flex space-x-2">
               <button 
                 @click="startEdit('order', cat.id)"
@@ -149,20 +167,40 @@
           </div>
         </div>
 
-        <form @submit.prevent="addCategory('order')" class="flex gap-2 pt-4 border-t">
-          <input 
-            v-model="newOrderCat"
-            type="text" 
-            placeholder="Add new category"
-            class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-          />
-          <button 
-            type="submit"
-            class="px-4 py-2 font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700"
-          >
-            Add
-          </button>
-        </form>
+        <!-- Add modal triggered by the Add button (modal layout matches Orders.vue styling) -->
+        <div v-if="showAddOrderModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm">
+          <div class="w-full max-w-md bg-white shadow-xl rounded-xl overflow-hidden flex flex-col max-h-[90vh]">
+            <!-- header -->
+            <div class="flex items-center justify-between p-6 border-b shrink-0">
+              <h3 class="text-lg font-semibold">{{ isOrderEditing ? 'Edit Order Category' : 'Add Order Category' }}</h3>
+              <button @click="closeAddOrderModal" class="text-2xl leading-none text-gray-500 hover:text-gray-700">×</button>
+            </div>
+
+            <!-- body (scrollable) -->
+            <div class="flex-1 overflow-y-auto p-6 space-y-4">
+              <form @submit.prevent="submitAddOrderCategory" class="space-y-4">
+                <div>
+                  <label class="block mb-1 text-sm font-medium">Category</label>
+                  <input v-model="addOrderForm.name" type="text" required placeholder="Category name" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" />
+                </div>
+                <div>
+                  <label class="block mb-1 text-sm font-medium">Subcategory (optional)</label>
+                  <input v-model="addOrderForm.subcategory" type="text" placeholder="Subcategory" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" />
+                </div>
+                <div>
+                  <label class="block mb-1 text-sm font-medium">Price (optional)</label>
+                  <input v-model.number="addOrderForm.price" type="number" step="0.01" placeholder="Price" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" />
+                </div>
+              </form>
+            </div>
+
+            <!-- footer (fixed) -->
+            <div class="flex justify-end space-x-3 p-6 border-t shrink-0">
+              <button type="button" @click="closeAddOrderModal" class="px-4 py-2 border rounded-lg hover:bg-gray-50">Cancel</button>
+              <button type="button" @click="submitAddOrderCategory" class="px-4 py-2 text-white bg-orange-600 rounded-lg hover:bg-orange-700">{{ isOrderEditing ? 'Update' : 'Save' }}</button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Expense Categories Tab -->
@@ -351,37 +389,72 @@ const updateProfile = () => {
 }
 
 // Categories
-const newOrderCat = ref('')
+// old inline category input removed in favor of modal
 const newExpenseCat = ref('')
 const newRecipeCat = ref('')
+
+// Add Order Modal state
+const showAddOrderModal = ref(false)
+const addOrderForm = ref({ name: '', subcategory: '', price: null })
+const isOrderEditing = ref(false)
+const editingOrderId = ref(null)
 
 // Using recipe categories from recipeStore now
 // const recipeCategories = ref(JSON.parse(localStorage.getItem('recipeCategories')) || ['Burger', 'Drinks', 'Snacks', 'Dessert', 'Other'])
 
 const addCategory = (type) => {
-  const value = type === 'order' ? newOrderCat.value : 
-                type === 'expense' ? newExpenseCat.value : newRecipeCat.value
+  const value = type === 'expense' ? newExpenseCat.value : newRecipeCat.value
   
-  if (value.trim()) {
-    if (type === 'order') {
-      orderStore.addCategory(value, '🍔')
-      newOrderCat.value = ''
-    } else if (type === 'expense') {
-      expenseStore.addCategory(value)
-      newExpenseCat.value = ''
-    } else {
-      recipeStore.addCategory(value)
-      newRecipeCat.value = ''
-    }
+  if (!value || !value.trim()) return
+  if (type === 'expense') {
+    expenseStore.addCategory(value)
+    newExpenseCat.value = ''
+  } else if (type === 'recipe') {
+    recipeStore.addCategory(value)
+    newRecipeCat.value = ''
   }
 }
 
+const openAddOrderModal = () => {
+  isOrderEditing.value = false
+  editingOrderId.value = null
+  addOrderForm.value = { name: '', subcategory: '', price: null }
+  showAddOrderModal.value = true
+}
+
+const openOrderEditModal = (id) => {
+  const cat = orderStore.categories.find(c => c.id === id)
+  if (!cat) return
+  isOrderEditing.value = true
+  editingOrderId.value = id
+  addOrderForm.value = { name: cat.name, subcategory: (cat.subcategories || []).join(', '), price: cat.price || null }
+  showAddOrderModal.value = true
+}
+
+const closeAddOrderModal = () => {
+  showAddOrderModal.value = false
+}
+
+const submitAddOrderCategory = () => {
+  if (!addOrderForm.value.name || !addOrderForm.value.name.trim()) return
+  const name = addOrderForm.value.name.trim()
+  const subcats = (addOrderForm.value.subcategory || '').split(',').map(s => s.trim()).filter(Boolean)
+  const price = addOrderForm.value.price || 0
+  if (isOrderEditing.value && editingOrderId.value) {
+    orderStore.updateCategory(editingOrderId.value, { name, subcategories: subcats, price })
+  } else {
+    orderStore.addCategory(name, '🍔', subcats, price)
+  }
+  closeAddOrderModal()
+}
+
 const startEdit = (type, id) => {
+  if (type === 'order') {
+    return openOrderEditModal(id)
+  }
   const newName = prompt('Edit category name:')
   if (newName && newName.trim()) {
-    if (type === 'order') {
-      orderStore.updateCategory(id, { name: newName })
-    } else if (type === 'expense') {
+    if (type === 'expense') {
       expenseStore.updateCategory(id, newName)
     } else {
       recipeStore.updateCategory(id, newName)

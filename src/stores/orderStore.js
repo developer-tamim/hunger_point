@@ -5,16 +5,16 @@ export const useOrderStore = defineStore('orders', () => {
   const orders = ref(JSON.parse(localStorage.getItem('orders')) || [])
 
   const categories = ref(JSON.parse(localStorage.getItem('categories')) || [
-    { id: 1, name: 'Burger', icon: '🍔' },
-    { id: 2, name: 'Drinks', icon: '🥤' },
-    { id: 3, name: 'Snacks', icon: '🍟' }
+    { id: 1, name: 'Burger', icon: '🍔', subcategories: [], price: 0 },
+    { id: 2, name: 'Drinks', icon: '🥤', subcategories: [], price: 0 },
+    { id: 3, name: 'Snacks', icon: '🍟', subcategories: [], price: 0 }
   ])
 
   const items = ref([
-    { id: 1, name: 'Classic Burger', categoryId: 1, price: 5.99 },
-    { id: 2, name: 'Cheese Burger', categoryId: 1, price: 6.99 },
-    { id: 3, name: 'Coke', categoryId: 2, price: 1.99 },
-    { id: 4, name: 'Fries', categoryId: 3, price: 2.99 }
+    { id: 1, name: 'Classic Burger', categoryId: 1, subcategory: 'Beef', price: 5.99 },
+    { id: 2, name: 'Cheese Burger', categoryId: 1, subcategory: 'Beef', price: 6.99 },
+    { id: 3, name: 'Coke', categoryId: 2, subcategory: 'Soft Drink', price: 1.99 },
+    { id: 4, name: 'Fries', categoryId: 3, subcategory: 'Side', price: 2.99 }
   ])
 
   const todayOrders = computed(() => {
@@ -39,8 +39,8 @@ export const useOrderStore = defineStore('orders', () => {
     localStorage.setItem('orders', JSON.stringify(orders.value))
   }
 
-  const addCategory = (name, icon = '🍔') => {
-    const newCat = { id: Date.now(), name, icon }
+  const addCategory = (name, icon = '🍔', subcategories = [], price = 0) => {
+    const newCat = { id: Date.now(), name, icon, subcategories: Array.isArray(subcategories) ? subcategories : [], price: price !== null ? Number(price) : 0 }
     categories.value.push(newCat)
     localStorage.setItem('categories', JSON.stringify(categories.value))
   }
