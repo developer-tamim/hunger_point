@@ -144,8 +144,8 @@
             <div>
               <div class="font-medium">{{ cat.name }}</div>
                 <div class="text-sm text-gray-500">
-                  <span v-if="cat.subcategories && cat.subcategories.length">Sub: {{ cat.subcategories.join(', ') }}</span>
-                  <span v-if="typeof cat.price !== 'undefined'"> • Price: ${{ cat.price }}</span>
+                  <span v-if="cat.subcategories && cat.subcategories.length">Items: {{ cat.subcategories.map(sc => typeof sc === 'string' ? sc : sc.name + (sc.price ? ' (' + Number(sc.price).toFixed(2) + 'tk)' : '')).join(', ') }}</span>
+                  <span v-if="typeof cat.price !== 'undefined'"> • Price: {{ cat.price }} tk</span>
                 </div>
             </div>
             <div class="flex space-x-2">
@@ -184,13 +184,36 @@
                   <input v-model="addOrderForm.name" type="text" required placeholder="Category name" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" />
                 </div>
                 <div>
-                  <label class="block mb-1 text-sm font-medium">Subcategory (optional)</label>
-                  <input v-model="addOrderForm.subcategory" type="text" placeholder="Subcategory" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" />
+                  <label class="block mb-1 text-sm font-medium">Items (optional)</label>
+                  <div class="grid grid-cols-2 gap-2">
+                    <input v-model="addOrderForm.newItem" type="text" placeholder="Add an item" @keyup.enter.prevent="addItem()" class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" />
+                    <input v-model.number="addOrderForm.newItemPrice" type="number" step="0.01" min="0" placeholder="Price" class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" />
+                    <div class="col-span-2 flex justify-end">
+                      <button type="button" @click="addItem" class="px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">Add</button>
+                    </div>
+                  </div>
+                  <div class="mt-2 flex flex-wrap gap-2">
+                    <template v-for="(it, idx) in addOrderForm.items" :key="idx">
+                      <span class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100">
+                        <template v-if="editingItemIndex === idx">
+                          <input v-model="editingItemDraft.name" class="px-2 py-1 rounded-l-md border focus:outline-none" placeholder="Item" />
+                          <input v-model.number="editingItemDraft.price" type="number" class="w-20 px-2 py-1 border focus:outline-none" placeholder="Price" min="0" step="0.01" />
+                          <button type="button" @click="saveItemEdit(idx)" class="ml-2 px-2 py-1 bg-green-500 text-white rounded-md hover:bg-green-600">Save</button>
+                          <button type="button" @click="cancelItemEdit" class="ml-1 px-2 py-1 bg-gray-200 rounded-md hover:bg-gray-300">Cancel</button>
+                        </template>
+                        <template v-else>
+                          <span class="mr-2">{{ it.name }} <small class="text-xs text-gray-500">{{ it.price ? Number(it.price).toFixed(2) : '00' }} tk</small></span>
+                          <button type="button" @click="startItemEdit(idx)" class="text-gray-500 hover:text-gray-700 ml-2">✎</button>
+                          <button type="button" @click="removeItem(idx)" class="text-gray-500 hover:text-gray-700 ml-2">×</button>
+                        </template>
+                      </span>
+                    </template>
+                  </div>
                 </div>
-                <div>
+                <!-- <div>
                   <label class="block mb-1 text-sm font-medium">Price (optional)</label>
                   <input v-model.number="addOrderForm.price" type="number" step="0.01" placeholder="Price" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" />
-                </div>
+                </div> -->
               </form>
             </div>
 
@@ -395,9 +418,13 @@ const newRecipeCat = ref('')
 
 // Add Order Modal state
 const showAddOrderModal = ref(false)
-const addOrderForm = ref({ name: '', subcategory: '', price: null })
+const addOrderForm = ref({ name: '', items: [], newItem: '', newItemPrice: null, price: null })
 const isOrderEditing = ref(false)
 const editingOrderId = ref(null)
+
+// Inline item editing state
+const editingItemIndex = ref(null)
+const editingItemDraft = ref({ name: '', price: null })
 
 // Using recipe categories from recipeStore now
 // const recipeCategories = ref(JSON.parse(localStorage.getItem('recipeCategories')) || ['Burger', 'Drinks', 'Snacks', 'Dessert', 'Other'])
@@ -418,7 +445,9 @@ const addCategory = (type) => {
 const openAddOrderModal = () => {
   isOrderEditing.value = false
   editingOrderId.value = null
-  addOrderForm.value = { name: '', subcategory: '', price: null }
+  addOrderForm.value = { name: '', items: [], newItem: '', newItemPrice: null, price: null }
+  editingItemIndex.value = null
+  editingItemDraft.value = { name: '', price: null }
   showAddOrderModal.value = true
 }
 
@@ -427,25 +456,97 @@ const openOrderEditModal = (id) => {
   if (!cat) return
   isOrderEditing.value = true
   editingOrderId.value = id
-  addOrderForm.value = { name: cat.name, subcategory: (cat.subcategories || []).join(', '), price: cat.price || null }
+  addOrderForm.value = { name: cat.name, items: cat.subcategories ? cat.subcategories.map(sc => (typeof sc === 'string' ? { name: sc, price: null } : { ...sc })) : [], newItem: '', newItemPrice: null, price: cat.price || null }
+  editingItemIndex.value = null
+  editingItemDraft.value = { name: '', price: null }
   showAddOrderModal.value = true
 }
 
 const closeAddOrderModal = () => {
   showAddOrderModal.value = false
+  editingItemIndex.value = null
+  editingItemDraft.value = { name: '', price: null }
 }
 
 const submitAddOrderCategory = () => {
   if (!addOrderForm.value.name || !addOrderForm.value.name.trim()) return
   const name = addOrderForm.value.name.trim()
-  const subcats = (addOrderForm.value.subcategory || '').split(',').map(s => s.trim()).filter(Boolean)
+  const items = (addOrderForm.value.items || []).map(it => ({ name: it.name, price: it.price !== undefined ? Number(it.price) : 0 }))
   const price = addOrderForm.value.price || 0
   if (isOrderEditing.value && editingOrderId.value) {
-    orderStore.updateCategory(editingOrderId.value, { name, subcategories: subcats, price })
+    orderStore.updateCategory(editingOrderId.value, { name, subcategories: items, price })
   } else {
-    orderStore.addCategory(name, '🍔', subcats, price)
+    const newCat = orderStore.addCategory(name, '🍔', items, price)
+    // make sure store items are synced inside addCategory
   }
   closeAddOrderModal()
+}
+
+const addItem = () => {
+  if (editingItemIndex.value !== null) {
+    alert('Please save or cancel the current edit first')
+    return
+  }
+  const v = (addOrderForm.value.newItem || '').trim()
+  const p = addOrderForm.value.newItemPrice !== null && addOrderForm.value.newItemPrice !== undefined ? Number(addOrderForm.value.newItemPrice) : 0
+  if (!v) return
+  // prevent duplicates by name
+  if (!addOrderForm.value.items.some(it => it.name.toLowerCase() === v.toLowerCase())) {
+    addOrderForm.value.items.push({ name: v, price: p })
+  }
+  addOrderForm.value.newItem = ''
+  addOrderForm.value.newItemPrice = null
+}
+
+const removeItem = (idx) => {
+  addOrderForm.value.items.splice(idx, 1)
+  // adjust editing index if needed
+  if (editingItemIndex.value === idx) {
+    editingItemIndex.value = null
+    editingItemDraft.value = { name: '', price: null }
+  } else if (editingItemIndex.value > idx) {
+    editingItemIndex.value = editingItemIndex.value - 1
+  }
+}
+
+const startItemEdit = (idx) => {
+  if (editingItemIndex.value !== null && editingItemIndex.value !== idx) {
+    // require the user to save/cancel the other edit first
+    alert('Please save or cancel your current edit first')
+    return
+  }
+  const target = addOrderForm.value.items[idx]
+  if (!target) return
+  editingItemIndex.value = idx
+  // clone the item to edit
+  editingItemDraft.value = { name: target.name, price: target.price }
+}
+
+const saveItemEdit = (idx) => {
+  const name = (editingItemDraft.value.name || '').trim()
+  if (!name) {
+    alert('Item name cannot be empty')
+    return
+  }
+  const price = editingItemDraft.value.price !== undefined && editingItemDraft.value.price !== null ? Number(editingItemDraft.value.price) : 0
+  if (isNaN(price) || price < 0) {
+    alert('Price must be a positive number')
+    return
+  }
+  // prevent duplicates (case-insensitive) except for current item
+  const isDup = addOrderForm.value.items.some((it, i) => i !== idx && it.name.toLowerCase() === name.toLowerCase())
+  if (isDup) {
+    alert('An item with that name already exists')
+    return
+  }
+  addOrderForm.value.items.splice(idx, 1, { name, price })
+  editingItemIndex.value = null
+  editingItemDraft.value = { name: '', price: null }
+}
+
+const cancelItemEdit = () => {
+  editingItemIndex.value = null
+  editingItemDraft.value = { name: '', price: null }
 }
 
 const startEdit = (type, id) => {

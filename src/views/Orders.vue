@@ -11,7 +11,7 @@
             class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
           />
           <select
-            v-model="selectedCategory"
+            v-model="selectedCategoryFilter"
             class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
           >
             <option value="">All Categories</option>
@@ -59,11 +59,11 @@
         <div v-else class="overflow-x-auto">
           <table class="w-full">
             <thead>
-              <tr class="border-b">
-                <th class="text-left py-3 px-4">Order #</th>
-                <th class="text-left py-3 px-4">Items</th>
-                <th class="text-left py-3 px-4">Subcategory</th>
-                <th class="text-left py-3 px-4">Total</th>
+                  <tr class="border-b">
+                    <th class="text-left py-3 px-4">Order #</th>
+                    <th class="text-left py-3 px-4">Items</th>
+                    <!-- <th class="text-left py-3 px-4">Item</th> -->
+                      <th class="text-left py-3 px-4">Price</th>
                 <th class="text-left py-3 px-4">Time</th>
                 <th class="text-left py-3 px-4">Actions</th>
               </tr>
@@ -84,9 +84,9 @@
                     {{ item.quantity }}× {{ item.name }}
                   </div>
                 </td>
-                <td class="py-3 px-4 text-sm text-gray-600">
+                <!-- <td class="py-3 px-4 text-sm text-gray-600">
                   {{ order.subcategory || '-' }}
-                </td>
+                </td> -->
                 <td class="py-3 px-4 font-semibold">
                   {{ order.total.toFixed(2) }} tk
                 </td>
@@ -186,24 +186,24 @@
               </div>
             </div>
 
-            <!-- subcategory picker -->
-            <div v-if="selectedCategory && orderStore.categories.find(c => c.name === selectedCategory)?.subcategories?.length" class="pt-4">
-              <label class="block text-sm font-medium mb-2">Subcategory</label>
+            <!-- item picker -->
+            <!-- <div v-if="selectedCategory && orderStore.categories.find(c => c.name === selectedCategory)?.subcategories?.length" class="pt-4">
+              <label class="block text-sm font-medium mb-2">Item</label>
               <div class="flex gap-2 flex-wrap">
                 <button
                   v-for="sc in orderStore.categories.find(c => c.name === selectedCategory).subcategories"
-                  :key="sc"
+                  :key="typeof sc === 'string' ? sc : sc.name"
                   type="button"
-                  @click="selectedSubCategory = sc"
+                  @click="selectedItem = typeof sc === 'string' ? sc : sc.name"
                   :class="[
                     'px-3 py-1 border rounded-lg text-sm transition-colors',
-                    selectedSubCategory === sc ? 'bg-orange-50 border-orange-500' : 'border-gray-300 hover:bg-gray-50'
+                    selectedItem === (typeof sc === 'string' ? sc : sc.name) ? 'bg-orange-50 border-orange-500' : 'border-gray-300 hover:bg-gray-50'
                   ]"
                 >
-                  {{ sc }}
+                  {{ typeof sc === 'string' ? sc : (sc.name + (sc.price ? ' (' + sc.price.toFixed(2) + 'tk)' : '')) }}
                 </button>
               </div>
-            </div>
+            </div> -->
 
             <!-- items (scrollable sub-section) -->
             <div v-if="selectedCategory">
@@ -290,14 +290,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import Layout from "../components/layout/Layout.vue";
 import { useOrderStore } from "../stores/orderStore";
 
 /* ---------- Reactive State ---------- */
 const searchQuery = ref("");
 const selectedCategory = ref("");
-const selectedSubCategory = ref("");
+const selectedItem = ref("");
 const showModal = ref(false);
 const selectedDate = ref(null);
 const selectedCategoryFilter = ref(""); // Added new filter variable
@@ -348,16 +348,27 @@ const availableItems = computed(() => {
   const cat = orderStore.categories.find((c) => c.name === selectedCategory.value); // Keep reading from modal selectedCategory
   if (!cat) return [];
   let list = orderStore.items.filter((i) => i.categoryId === cat.id);
-  if (selectedSubCategory.value) {
-    list = list.filter((i) => i.subcategory === selectedSubCategory.value);
+  if (selectedItem.value) {
+    list = list.filter((i) => i.subcategory === selectedItem.value);
   }
   return list;
 });
 
+// Watch for changes in items list and ensure selected item exists; if not, reset
+watch(() => orderStore.items, () => {
+  if (!selectedCategory.value) return
+  const cat = orderStore.categories.find(c => c.name === selectedCategory.value)
+  if (!cat) return
+  const exists = orderStore.items.some(i => i.categoryId === cat.id && i.subcategory === selectedItem.value)
+  if (!exists) {
+    selectedItem.value = ''
+  }
+}, { deep: true })
+
 const selectModalCategory = (cat) => {
   selectedCategory.value = cat.name
   // reset subcategory when switching categories
-  selectedSubCategory.value = ''
+  selectedItem.value = ''
 }
 
 const selectedItems = ref([]);
@@ -388,14 +399,14 @@ const openAddModal = () => {
   editingOrder.value = null;
   selectedEditId.value = null;
   selectedCategoryFilter.value = ""; // Reset the filter variable
-  selectedSubCategory.value = "";
+  selectedItem.value = "";
   selectedItems.value = [];
   showModal.value = true;
 };
 
 const editOrder = (order) => {
   selectedCategory.value = order.category;
-  selectedSubCategory.value = order.subcategory || '';
+  selectedItem.value = order.subcategory || '';
   selectedItems.value = order.items.map((it) => ({ ...it }));
   editingOrder.value = order;
   selectedEditId.value = order.id;
@@ -410,7 +421,7 @@ const updateOrder = () => {
   orderStore.orders[idx] = {
     ...editingOrder.value,
     category: selectedCategory.value,
-    subcategory: selectedSubCategory.value || null,
+    subcategory: selectedItem.value || null,
     items: selectedItems.value,
     total: orderTotal.value,
     updatedAt: new Date().toISOString(),
@@ -423,7 +434,7 @@ const submitOrder = () => {
   if (!selectedItems.value.length) return;
   orderStore.addOrder({
     category: selectedCategory.value,
-    subcategory: selectedSubCategory.value || null,
+    subcategory: selectedItem.value || null,
     items: selectedItems.value,
     total: orderTotal.value,
   });
