@@ -187,7 +187,7 @@
                   <label class="block mb-1 text-sm font-medium">Items (optional)</label>
                   <div class="grid grid-cols-2 gap-2">
                     <input v-model="addOrderForm.newItem" type="text" placeholder="Add an item" @keyup.enter.prevent="addItem()" class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" />
-                    <input v-model.number="addOrderForm.newItemPrice" type="number" step="0.01" min="0" placeholder="Price" class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" />
+                    <input v-model.number="addOrderForm.newItemPrice" type="number" step="00" min="0" placeholder="Price" class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" />
                     <div class="col-span-2 flex justify-end">
                       <button type="button" @click="addItem" class="px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">Add</button>
                     </div>
@@ -197,7 +197,7 @@
                       <span class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100">
                         <template v-if="editingItemIndex === idx">
                           <input v-model="editingItemDraft.name" class="px-2 py-1 rounded-l-md border focus:outline-none" placeholder="Item" />
-                          <input v-model.number="editingItemDraft.price" type="number" class="w-20 px-2 py-1 border focus:outline-none" placeholder="Price" min="0" step="0.01" />
+                          <input v-model.number="editingItemDraft.price" type="number" class="w-20 px-2 py-1 border focus:outline-none" placeholder="Price" min="0" step="00" />
                           <button type="button" @click="saveItemEdit(idx)" class="ml-2 px-2 py-1 bg-green-500 text-white rounded-md hover:bg-green-600">Save</button>
                           <button type="button" @click="cancelItemEdit" class="ml-1 px-2 py-1 bg-gray-200 rounded-md hover:bg-gray-300">Cancel</button>
                         </template>
@@ -212,7 +212,7 @@
                 </div>
                 <!-- <div>
                   <label class="block mb-1 text-sm font-medium">Price (optional)</label>
-                  <input v-model.number="addOrderForm.price" type="number" step="0.01" placeholder="Price" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" />
+                  <input v-model.number="addOrderForm.price" type="number" step="00" placeholder="Price" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" />
                 </div> -->
               </form>
             </div>
