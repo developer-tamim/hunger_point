@@ -3,11 +3,11 @@
     <SideBar :is-collapsed="sidebarCollapsed" @toggle="toggleSidebar" />
     
     <div :class="[
-      'flex-1 transition-all duration-300',
+      'flex-1 transition-all duration-300 cursor-default',
       sidebarCollapsed ? 'ml-16' : 'ml-64'
     ]">
       <NavBar :current-page-title="currentPageTitle" />
-      <main>
+      <main class="cursor-default">
         <slot />
       </main>
     </div>
