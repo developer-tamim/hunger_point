@@ -163,7 +163,7 @@ onMounted(() => {
   // Add sample data if empty
   if (expenseStore.expenses.length === 0) {
     expenseStore.addExpense({
-      amount: 45.50,
+      amount: 45,
       category: 'Ingredients',
       description: 'Burger buns and patties',
       vendor: 'Metro Supplies',
