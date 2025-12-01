@@ -8,8 +8,8 @@
           <p class="text-sm text-gray-500">Overview of today’s activity — no charts, just clean stats & lists</p>
         </div>
         <div class="flex items-center space-x-3">
-          <ActionButton to="/orders" icon="📋" text="New Order" />
-          <ActionButton to="/expenses" icon="💸" text="Add Expense" />
+          <ActionButton to="/orders" class="text-white bg-orange-600 hover:bg-orange-700" text="New Order" />
+          <ActionButton to="/expenses" text="Add Expense" />
         </div>
       </div>
 
