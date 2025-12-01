@@ -98,6 +98,7 @@
   <div class="relative" @click.stop>
     <button
       @click="toggleDropdown(order.id)"
+      :id="`drop-btn-${order.id}`"
       class="p-1 rounded hover:bg-gray-100 transition-colors"
     >
       <svg class="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">

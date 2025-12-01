@@ -28,9 +28,23 @@ export const useOrderStore = defineStore('orders', () => {
     return todayOrders.value.reduce((sum, order) => sum + order.total, 0)
   })
 
+  // Generate sequential order number in format HNPT-001
+  const generateOrderNumber = () => {
+    const prefix = 'HNPT-'
+    let max = 0
+    orders.value.forEach(o => {
+      if (typeof o.id === 'string' && o.id.startsWith(prefix)) {
+        const n = parseInt(o.id.replace(prefix, ''), 10)
+        if (!isNaN(n) && n > max) max = n
+      }
+    })
+    const next = max + 1
+    return `${prefix}${String(next).padStart(3, '0')}`
+  }
+
   const addOrder = (orderData) => {
     const order = {
-      id: Date.now(),
+      id: generateOrderNumber(),
       ...orderData,
       createdAt: new Date().toISOString(),
       status: 'completed'
