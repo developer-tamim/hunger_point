@@ -316,6 +316,66 @@
         </div>
       </div>
     </div>
+
+    <!-- Announcements Tab -->
+    <div v-if="activeTab === 'announcements'" class="p-6 space-y-4 bg-white shadow-sm rounded-xl">
+      <div class="flex items-center justify-between">
+        <h2 class="mb-4 text-xl font-semibold">Notes & Announcements</h2>
+        <div class="pt-4 flex justify-end">
+          <button @click="openAddAnnouncementModal" class="px-4 py-2 font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700">Add Announcement</button>
+        </div>
+      </div>
+
+      <div class="space-y-3">
+        <div v-if="announcementStore.announcements.length === 0" class="text-sm text-gray-500">No announcements yet.</div>
+        <div v-for="a in announcementStore.announcements" :key="a.id" class="p-3 border rounded-lg bg-gray-50">
+          <div class="flex items-start justify-between">
+            <div class="mr-2">
+              <div class="font-medium">{{ a.title }} <span v-if="a.pinned" class="text-xs text-orange-600">(Pinned)</span></div>
+              <div class="text-sm text-gray-600">{{ a.body }}</div>
+              <div class="text-xs text-gray-500 mt-1">{{ new Date(a.createdAt).toLocaleString() }}</div>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button type="button" @click.stop.prevent="openEditAnnouncementModal(a.id)" class="text-indigo-600 hover:text-indigo-800">Edit</button>
+              <button type="button" @click.stop.prevent="announcementStore.updateAnnouncement(a.id, { active: !a.active })" class="text-yellow-600 hover:text-yellow-800">{{ a.active ? 'Unpublish' : 'Set Active' }}</button>
+              <button type="button" @click.stop.prevent="deleteAnnouncement(a.id)" class="text-red-600 hover:text-red-800">Delete</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add/Edit Announcement Modal -->
+      <div v-if="showAnnModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm">
+        <div class="w-full max-w-md bg-white shadow-xl rounded-xl">
+          <div class="flex items-center justify-between p-6 border-b">
+            <h3 class="text-lg font-semibold">{{ isAnnEditing ? 'Edit Announcement' : 'Add Announcement' }}</h3>
+            <button @click="showAnnModal = false" class="text-2xl leading-none text-gray-500 hover:text-gray-700">×</button>
+          </div>
+          <form @submit.prevent="submitAnnouncement" class="p-6 space-y-4">
+            <div>
+              <label class="block mb-1 text-sm font-medium">Title *</label>
+              <input v-model="annForm.title" type="text" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" required />
+            </div>
+            <div>
+              <label class="block mb-1 text-sm font-medium">Body *</label>
+              <textarea v-model="annForm.body" rows="4" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" required></textarea>
+            </div>
+            <div class="flex items-center space-x-3">
+              <label class="flex items-center space-x-2 text-sm">
+                <input v-model="annForm.active" type="checkbox" class="rounded" />
+                <span>Active (show on dashboard)</span>
+              </label>
+            </div>
+            <div class="flex justify-end space-x-3 pt-4 border-t">
+              <button type="button" @click="showAnnModal = false" class="px-4 py-2 border rounded-lg hover:bg-gray-50">Cancel</button>
+              <button type="submit" class="px-4 py-2 text-white bg-orange-600 rounded-lg hover:bg-orange-700">{{ isAnnEditing ? 'Update' : 'Save' }}</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <ConfirmModal :visible="showDeleteAnnConfirm" title="Delete Announcement" message="Are you sure you want to delete this announcement? This action cannot be undone." @confirm="confirmDeleteAnnouncement" @cancel="cancelDeleteAnnouncement" />
+    </div>
   </Layout>
 </template>
 
@@ -325,13 +385,16 @@ import { useAuthStore } from '../stores/authStore'
 import { useOrderStore } from '../stores/orderStore'
 import { useExpenseStore } from '../stores/expenseStore'
 import { useRecipeStore } from '../stores/recipeStore'
+import { useAnnouncementStore } from '../stores/announcementStore'
 import { useRouter } from 'vue-router'
 import Layout from '../components/layout/Layout.vue'
+import ConfirmModal from '../components/ui/ConfirmModal.vue'
 
 const authStore = useAuthStore()
 const orderStore = useOrderStore()
 const expenseStore = useExpenseStore()
 const recipeStore = useRecipeStore()
+const announcementStore = useAnnouncementStore()
 const router = useRouter()
 
 const activeTab = ref('profile')
@@ -342,6 +405,7 @@ const tabs = [
   { id: 'order-cats', name: 'Order Categories' },
   { id: 'expense-cats', name: 'Expense Categories' },
   { id: 'recipe-cats', name: 'Recipe Categories' }
+  ,{ id: 'announcements', name: 'Notes & Announcements' }
 ]
 
 // Profile Modal State
@@ -580,5 +644,59 @@ const logout = () => {
     authStore.logout()
     router.push('/login')
   }
+}
+
+// Announcements state
+const showAnnModal = ref(false)
+const isAnnEditing = ref(false)
+const editingAnnId = ref(null)
+const annForm = ref({ title: '', body: '', pinned: false, active: false })
+const showDeleteAnnConfirm = ref(false)
+const pendingDeleteAnnId = ref(null)
+
+const openAddAnnouncementModal = () => {
+  isAnnEditing.value = false
+  editingAnnId.value = null
+  annForm.value = { title: '', body: '', pinned: false, active: false }
+  showAnnModal.value = true
+}
+
+const openEditAnnouncementModal = (id) => {
+  const a = announcementStore.announcements.find(s => s.id === id)
+  if (!a) return
+  isAnnEditing.value = true
+  editingAnnId.value = id
+  annForm.value = { title: a.title, body: a.body, pinned: !!a.pinned, active: !!a.active }
+  showAnnModal.value = true
+}
+
+const submitAnnouncement = () => {
+  const title = (annForm.value.title || '').trim()
+  const body = (annForm.value.body || '').trim()
+  if (!title || !body) return alert('Title and body are required')
+  if (isAnnEditing.value && editingAnnId.value) {
+    announcementStore.updateAnnouncement(editingAnnId.value, { title, body, pinned: !!annForm.value.pinned, active: !!annForm.value.active })
+  } else {
+    announcementStore.addAnnouncement({ title, body, pinned: !!annForm.value.pinned, active: !!annForm.value.active })
+  }
+  showAnnModal.value = false
+}
+
+const deleteAnnouncement = (id) => {
+  pendingDeleteAnnId.value = id
+  showDeleteAnnConfirm.value = true
+}
+
+const confirmDeleteAnnouncement = () => {
+  
+  if (!pendingDeleteAnnId.value) return
+  announcementStore.deleteAnnouncement(pendingDeleteAnnId.value)
+  pendingDeleteAnnId.value = null
+  showDeleteAnnConfirm.value = false
+}
+
+const cancelDeleteAnnouncement = () => {
+  pendingDeleteAnnId.value = null
+  showDeleteAnnConfirm.value = false
 }
 </script>
