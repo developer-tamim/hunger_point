@@ -99,15 +99,90 @@
             </div>
             <div class="flex items-center space-x-4">
               <span class="font-semibold text-red-600">{{ expense.amount.toFixed(2) }} tk</span>
-              <button @click="confirmDeleteExpense(expense.id)" class="text-sm text-red-600 hover:text-red-800">
-                Delete
-              </button>
+              <div class="relative">
+                <button
+                  @click="openDropdown === expense.id ? (openDropdown = null) : (openDropdown = expense.id)"
+                  class="px-2 py-1 text-gray-500 hover:text-gray-700"
+                >
+                  ⋮
+                </button>
+                <div
+                  v-if="openDropdown === expense.id"
+                  class="absolute right-0 mt-1 w-32 bg-white border rounded-lg shadow-lg z-10"
+                >
+                  <button
+                    @click="startEditExpense(expense); openDropdown = null"
+                    class="block w-full text-left px-4 py-2 text-blue-600 hover:bg-blue-50"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    @click="confirmDeleteExpense(expense.id); openDropdown = null"
+                    class="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 border-t"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
     </div>
+
+    <!-- Edit Expense Modal -->
+    <div v-if="editMode && editingExpense" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+      <div class="w-full max-w-md bg-white rounded-xl shadow-xl p-6 max-h-[90vh] overflow-y-auto">
+        <h3 class="text-lg font-semibold mb-4">Edit Expense</h3>
+        <form @submit.prevent="saveEditExpense" class="space-y-4">
+          <div>
+            <label class="block mb-1 text-sm font-medium">Amount</label>
+            <input v-model="editingExpense.amount" type="number" step="0.01"
+              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" />
+          </div>
+          <div>
+            <label class="block mb-1 text-sm font-medium">Category</label>
+            <select v-model="editingExpense.category"
+              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+              <option v-for="cat in expenseStore.expenseCategories" :key="cat" :value="cat">
+                {{ cat }}
+              </option>
+            </select>
+          </div>
+          <div>
+            <label class="block mb-1 text-sm font-medium">Description</label>
+            <textarea v-model="editingExpense.description" rows="2"
+              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"></textarea>
+          </div>
+          <div>
+            <label class="block mb-1 text-sm font-medium">Vendor</label>
+            <input v-model="editingExpense.vendor" type="text"
+              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" />
+          </div>
+          <div>
+            <label class="block mb-1 text-sm font-medium">Date</label>
+            <input v-model="editingExpense.date" type="date"
+              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" />
+          </div>
+          <div class="flex justify-end gap-2 mt-6">
+            <button @click="editMode = false" type="button"
+              class="px-4 py-2 border rounded-lg hover:bg-gray-50">Cancel</button>
+            <button type="submit"
+              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <ConfirmModal
+      :visible="showDeleteConfirm"
+      title="Confirm Delete"
+      message="Are you sure you want to delete this expense? This action cannot be undone."
+      @confirm="handleDeleteExpense"
+      @cancel="showDeleteConfirm = false"
+    />
   </Layout>
 </template>
 
@@ -122,6 +197,9 @@ const expenseStore = useExpenseStore()
 
 const showDeleteConfirm = ref(false)
 const deleteTargetId = ref(null)
+const openDropdown = ref(null)
+const editingExpense = ref(null)
+const editMode = ref(false)
 
 const confirmDeleteExpense = (id) => {
   deleteTargetId.value = id
@@ -134,6 +212,25 @@ const handleDeleteExpense = () => {
     deleteTargetId.value = null
   }
   showDeleteConfirm.value = false
+}
+
+const startEditExpense = (expense) => {
+  editingExpense.value = { ...expense }
+  editMode.value = true
+}
+
+const saveEditExpense = () => {
+  if (editingExpense.value) {
+    expenseStore.updateExpense(editingExpense.value.id, {
+      amount: parseFloat(editingExpense.value.amount),
+      category: editingExpense.value.category,
+      description: editingExpense.value.description,
+      vendor: editingExpense.value.vendor,
+      date: editingExpense.value.date
+    })
+    editMode.value = false
+    editingExpense.value = null
+  }
 }
 
 const form = ref({
@@ -183,12 +280,3 @@ onMounted(() => {
   }
 })
 </script>
-
-    <!-- Delete Confirmation Modal -->
-    <ConfirmModal
-      :visible="showDeleteConfirm"
-      title="Confirm Delete"
-      message="Are you sure you want to delete this expense? This action cannot be undone."
-      @confirm="handleDeleteExpense"
-      @cancel="showDeleteConfirm = false"
-    />
