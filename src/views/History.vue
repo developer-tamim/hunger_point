@@ -80,15 +80,29 @@
                   <div class="flex items-center space-x-3">
                     <span class="px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium">{{ order.category }}</span>
                     <span class="text-sm text-gray-500">{{ formatDate(order.createdAt) }}</span>
+                    <span class="text-xs text-gray-500">{{ formatTime(order.createdAt) }}</span>
                   </div>
                   <h3 class="mt-2 font-semibold text-gray-800">#{{ order.id }}</h3>
                   <div class="mt-1 text-sm text-gray-600">
                     <span v-for="(item, idx) in order.items" :key="idx">{{ item.quantity }}× {{ item.name }}<span v-if="idx < order.items.length - 1">, </span></span>
                   </div>
                 </div>
-                <div class="text-right">
+                <div class="text-right space-y-2">
                   <p class="text-lg font-bold text-green-600">{{ order.total.toFixed(2) }} tk</p>
-                  <p class="text-xs text-gray-500">{{ formatTime(order.createdAt) }}</p>
+                  <div class="flex gap-2 justify-end mt-3">
+                    <button
+                      @click="startEditOrder(order)"
+                      class="px-3 py-1 bg-blue-500 text-white text-xs rounded-lg hover:bg-blue-600 transition-colors"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      @click="confirmDelete('order', order.id)"
+                      class="px-3 py-1 bg-red-500 text-white text-xs rounded-lg hover:bg-red-600 transition-colors"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -102,9 +116,6 @@
         <!-- Header -->
         <div class="bg-white rounded-xl shadow-sm p-6 flex items-center justify-between">
           <h1 class="text-2xl font-bold text-gray-800">Expense History</h1>
-          <!-- <div class="text-sm text-gray-600">
-            Total expenses: <span class="font-semibold">{{ filteredExpenses.length }}</span>
-          </div> -->
         </div>
 
         <!-- Expense Summary -->
@@ -159,13 +170,28 @@
                   <div class="flex items-center space-x-3">
                     <span class="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">{{ expense.category }}</span>
                     <span class="text-sm text-gray-500">{{ formatDate(expense.date) }}</span>
+                  <span class="text-xs text-gray-500">{{ formatTime(expense.date) }}</span>
+
                   </div>
-                  <h3 class="mt-2 font-semibold text-gray-800">{{ expense.amount.toFixed(2) }} tk</h3>
-                  <p class="mt-1 text-sm text-gray-600">{{ expense.description }}</p>
+                  <h3 class="mt-2 font-semibold text-gray-800">{{ expense.description }}</h3>
                   <p v-if="expense.vendor" class="text-xs text-gray-500 mt-1">Vendor: {{ expense.vendor }}</p>
                 </div>
-                <div class="text-right">
-                  <p class="text-xs text-gray-500">{{ formatTime(expense.date) }}</p>
+                <div class="text-right space-y-2">
+                  <h3 class="mt-2 font-semibold text-red-800">{{ expense.amount.toFixed(2) }} tk</h3>
+                  <div class="flex gap-2 justify-end mt-3">
+                    <button
+                      @click="startEditExpense(expense)"
+                      class="px-3 py-1 bg-blue-500 text-white text-xs rounded-lg hover:bg-blue-600 transition-colors"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      @click="confirmDelete('expense', expense.id)"
+                      class="px-3 py-1 bg-red-500 text-white text-xs rounded-lg hover:bg-red-600 transition-colors"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -175,6 +201,88 @@
         
       </div>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <ConfirmModal
+      :visible="showDeleteConfirm"
+      title="Confirm Delete"
+      message="Are you sure you want to delete this item? This action cannot be undone."
+      @confirm="handleDelete"
+      @cancel="showDeleteConfirm = false"
+    />
+
+    <!-- Edit Order Modal -->
+    <div v-if="editMode === 'order' && editingItem" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+      <div class="w-full max-w-md bg-white rounded-xl shadow-xl p-6 max-h-[90vh] overflow-y-auto">
+        <h3 class="text-lg font-semibold mb-4">Edit Order #{{ editingItem.id }}</h3>
+        <form @submit.prevent="saveEditOrder" class="space-y-4">
+          <div>
+            <label class="block mb-1 text-sm font-medium">Total Amount</label>
+            <input v-model="editingItem.total" type="number" step="0.01"
+              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" />
+          </div>
+          <div>
+            <label class="block mb-1 text-sm font-medium">Category</label>
+            <select v-model="editingItem.category"
+              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+              <option v-for="cat in orderStore.categories" :key="cat.id" :value="cat.name">
+                {{ cat.name }}
+              </option>
+            </select>
+          </div>
+          <div class="flex justify-end gap-2 mt-6">
+            <button @click="editMode = null" type="button"
+              class="px-4 py-2 border rounded-lg hover:bg-gray-50">Cancel</button>
+            <button type="submit"
+              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Edit Expense Modal -->
+    <div v-if="editMode === 'expense' && editingItem" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+      <div class="w-full max-w-md bg-white rounded-xl shadow-xl p-6 max-h-[90vh] overflow-y-auto">
+        <h3 class="text-lg font-semibold mb-4">Edit Expense</h3>
+        <form @submit.prevent="saveEditExpense" class="space-y-4">
+          <div>
+            <label class="block mb-1 text-sm font-medium">Amount</label>
+            <input v-model="editingItem.amount" type="number" step="0.01"
+              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" />
+          </div>
+          <div>
+            <label class="block mb-1 text-sm font-medium">Category</label>
+            <select v-model="editingItem.category"
+              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+              <option v-for="cat in expenseStore.expenseCategories" :key="cat" :value="cat">
+                {{ cat }}
+              </option>
+            </select>
+          </div>
+          <div>
+            <label class="block mb-1 text-sm font-medium">Description</label>
+            <textarea v-model="editingItem.description" rows="2"
+              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"></textarea>
+          </div>
+          <div>
+            <label class="block mb-1 text-sm font-medium">Vendor</label>
+            <input v-model="editingItem.vendor" type="text"
+              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" />
+          </div>
+          <div>
+            <label class="block mb-1 text-sm font-medium">Date</label>
+            <input v-model="editingItem.date" type="date"
+              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" />
+          </div>
+          <div class="flex justify-end gap-2 mt-6">
+            <button @click="editMode = null" type="button"
+              class="px-4 py-2 border rounded-lg hover:bg-gray-50">Cancel</button>
+            <button type="submit"
+              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </Layout>
 </template>
 
@@ -182,6 +290,7 @@
 /* ---------- Imports ---------- */
 import { ref, computed } from 'vue'
 import Layout from '../components/layout/Layout.vue'
+import ConfirmModal from '../components/ui/ConfirmModal.vue'
 import { useOrderStore } from '../stores/orderStore'
 import { useExpenseStore } from '../stores/expenseStore'
 
@@ -195,6 +304,12 @@ const tabs = [
   { id: 'orders', name: 'Order History' },
   { id: 'expenses', name: 'Expense History' }
 ]
+
+/* ---------- Modals & States ---------- */
+const showDeleteConfirm = ref(false)
+const deleteTarget = ref(null) // { type: 'order'|'expense', id }
+const editingItem = ref(null)
+const editMode = ref(null) // 'order' | 'expense' | null
 
 /* ---------- Order History Filters ---------- */
 const orderSearch     = ref('')
@@ -289,4 +404,59 @@ const filteredExpenses = computed(() => {
 
 const expenseTotal = computed(() => filteredExpenses.value.reduce((sum, e) => sum + e.amount, 0))
 const expenseAvg   = computed(() => (filteredExpenses.value.length ? expenseTotal.value / filteredExpenses.value.length : 0))
+
+/* ---------- Delete Handler ---------- */
+const confirmDelete = (type, id) => {
+  deleteTarget.value = { type, id }
+  showDeleteConfirm.value = true
+}
+
+const handleDelete = () => {
+  if (!deleteTarget.value) return
+  
+  if (deleteTarget.value.type === 'order') {
+    orderStore.deleteOrder(deleteTarget.value.id)
+  } else if (deleteTarget.value.type === 'expense') {
+    expenseStore.deleteExpense(deleteTarget.value.id)
+  }
+  
+  showDeleteConfirm.value = false
+  deleteTarget.value = null
+}
+
+/* ---------- Edit Handler ---------- */
+const startEditOrder = (order) => {
+  editingItem.value = { ...order }
+  editMode.value = 'order'
+}
+
+const saveEditOrder = () => {
+  if (editingItem.value) {
+    orderStore.updateOrder(editingItem.value.id, {
+      total: parseFloat(editingItem.value.total),
+      category: editingItem.value.category
+    })
+    editMode.value = null
+    editingItem.value = null
+  }
+}
+
+const startEditExpense = (expense) => {
+  editingItem.value = { ...expense }
+  editMode.value = 'expense'
+}
+
+const saveEditExpense = () => {
+  if (editingItem.value) {
+    expenseStore.updateExpense(editingItem.value.id, {
+      amount: parseFloat(editingItem.value.amount),
+      category: editingItem.value.category,
+      description: editingItem.value.description,
+      vendor: editingItem.value.vendor,
+      date: editingItem.value.date
+    })
+    editMode.value = null
+    editingItem.value = null
+  }
+}
 </script>

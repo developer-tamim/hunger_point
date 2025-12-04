@@ -122,6 +122,19 @@ export const useOrderStore = defineStore('orders', () => {
     )
   }
 
+  const updateOrder = (id, updates) => {
+    const index = orders.value.findIndex(o => o.id === id)
+    if (index !== -1) {
+      orders.value[index] = { ...orders.value[index], ...updates }
+      localStorage.setItem('orders', JSON.stringify(orders.value))
+    }
+  }
+
+  const deleteOrder = (id) => {
+    orders.value = orders.value.filter(o => o.id !== id)
+    localStorage.setItem('orders', JSON.stringify(orders.value))
+  }
+
   return {
     orders,
     categories,
@@ -129,6 +142,8 @@ export const useOrderStore = defineStore('orders', () => {
     todayOrders,
     totalSalesToday,
     addOrder,
+    updateOrder,
+    deleteOrder,
     getOrdersByDate,
     addCategory,
     updateCategory,
