@@ -129,7 +129,7 @@ const form = ref({
 
 const recentExpenses = computed(() => {
   return [...expenseStore.expenses]
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .sort((a, b) => new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date))
     .slice(0, 10) // Show last 10
 })
 

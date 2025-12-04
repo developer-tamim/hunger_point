@@ -19,9 +19,9 @@ export const useOrderStore = defineStore('orders', () => {
 
   const todayOrders = computed(() => {
     const today = new Date().toDateString()
-    return orders.value.filter(order => 
-      new Date(order.createdAt).toDateString() === today
-    )
+    return [...orders.value]
+      .filter(order => new Date(order.createdAt).toDateString() === today)
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
   })
 
   const totalSalesToday = computed(() => {

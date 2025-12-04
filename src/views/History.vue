@@ -377,7 +377,7 @@ const orderAvg   = computed(() => (filteredOrders.value.length ? orderTotal.valu
 
 /* ---------- Expense History Computed ---------- */
 const allExpenses = computed(() =>
-  [...expenseStore.expenses].sort((a, b) => new Date(b.date) - new Date(a.date))
+  [...expenseStore.expenses].sort((a, b) => new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date))
 )
 
 const filteredExpenses = computed(() => {

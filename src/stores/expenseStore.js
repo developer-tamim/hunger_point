@@ -14,16 +14,19 @@ export const useExpenseStore = defineStore('expenses', () => {
 
   const todayExpenses = computed(() => {
     const today = new Date().toDateString()
-    return expenses.value.filter(expense => 
-      new Date(expense.date).toDateString() === today
-    )
+    return [...expenses.value]
+      .filter(expense => new Date(expense.date).toDateString() === today)
+      .sort((a, b) => new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date))
   })
 
   const addExpense = (expenseData) => {
     const expense = {
       id: Date.now(),
       ...expenseData,
-      date: expenseData.date || new Date().toISOString()
+      // keep the provided date (YYYY-MM-DD) for display/filtering, but
+      // always attach a full timestamp for ordering and uniqueness
+      date: expenseData.date || new Date().toISOString(),
+      createdAt: new Date().toISOString()
     }
     expenses.value.push(expense)
     localStorage.setItem('expenses', JSON.stringify(expenses.value))
