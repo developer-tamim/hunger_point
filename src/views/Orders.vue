@@ -119,8 +119,8 @@
         Edit
       </button>
       <button
-        @click="deleteOrder(order.id); openDropdown = null"
-        class="block w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-gray-100"
+        @click="confirmDeleteOrder(order.id); openDropdown = null"
+        class="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-50"
       >
         Delete
       </button>
@@ -287,12 +287,22 @@
         </div>
       </div>
     </transition>
+
+    <!-- Delete Confirmation Modal -->
+    <ConfirmModal
+      :visible="showDeleteConfirm"
+      title="Confirm Delete"
+      message="Are you sure you want to delete this order? This action cannot be undone."
+      @confirm="handleDeleteOrder"
+      @cancel="showDeleteConfirm = false"
+    />
   </Layout>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
 import Layout from "../components/layout/Layout.vue";
+import ConfirmModal from '../components/ui/ConfirmModal.vue';
 import { useOrderStore } from "../stores/orderStore";
 
 /* ---------- Reactive State ---------- */
@@ -453,12 +463,21 @@ const closeModal = () => {
 const formatTime = (ts) =>
   new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
-const deleteOrder = (id) => {
-  if (confirm("Delete this order?")) {
-    orderStore.orders = orderStore.orders.filter((o) => o.id !== id);
-    localStorage.setItem("orders", JSON.stringify(orderStore.orders));
+const showDeleteConfirm = ref(false)
+const deleteTargetId = ref(null)
+
+const confirmDeleteOrder = (id) => {
+  deleteTargetId.value = id
+  showDeleteConfirm.value = true
+}
+
+const handleDeleteOrder = () => {
+  if (deleteTargetId.value !== null) {
+    orderStore.deleteOrder(deleteTargetId.value)
+    deleteTargetId.value = null
   }
-};
+  showDeleteConfirm.value = false
+}
 
 const selectDate = (d) => {
   if (d) selectedDate.value = d;

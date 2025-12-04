@@ -68,7 +68,7 @@
                   <span>Edit</span>
                 </button>
                 <button
-                  @click="deleteRecipe(recipe.id)"
+                  @click="confirmDeleteRecipe(recipe.id)"
                   class="flex items-center w-full px-3 py-2 space-x-2 text-sm text-left text-red-600 hover:bg-gray-100"
                 >
                   <span>Delete</span>
@@ -246,12 +246,22 @@
         </div>
       </div>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <ConfirmModal
+      :visible="showDeleteConfirm"
+      title="Confirm Delete"
+      message="Are you sure you want to delete this recipe? This action cannot be undone."
+      @confirm="handleDeleteRecipe"
+      @cancel="showDeleteConfirm = false"
+    />
   </Layout>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import Layout from "../components/layout/Layout.vue";
+import ConfirmModal from '../components/ui/ConfirmModal.vue';
 import { useRecipeStore } from "../stores/recipeStore";
 
 const recipeStore = useRecipeStore();
@@ -322,12 +332,22 @@ const editRecipe = (id) => {
   }
 };
 
-const deleteRecipe = (id) => {
-  if (confirm("Delete this recipe?")) {
-    recipeStore.deleteRecipe(id);
-    showMenu.value = null;
+const showDeleteConfirm = ref(false)
+const deleteTargetId = ref(null)
+
+const confirmDeleteRecipe = (id) => {
+  deleteTargetId.value = id
+  showDeleteConfirm.value = true
+}
+
+const handleDeleteRecipe = () => {
+  if (deleteTargetId.value !== null) {
+    recipeStore.deleteRecipe(deleteTargetId.value);
+    deleteTargetId.value = null
+    showMenu.value = null
   }
-};
+  showDeleteConfirm.value = false
+}
 
 const submitRecipe = () => {
   if (isEditMode.value) {

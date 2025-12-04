@@ -99,7 +99,7 @@
             </div>
             <div class="flex items-center space-x-4">
               <span class="font-semibold text-red-600">{{ expense.amount.toFixed(2) }} tk</span>
-              <button @click="deleteExpense(expense.id)" class="text-sm text-red-600 hover:text-red-800">
+              <button @click="confirmDeleteExpense(expense.id)" class="text-sm text-red-600 hover:text-red-800">
                 Delete
               </button>
             </div>
@@ -114,10 +114,27 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import Layout from '../components/layout/Layout.vue'
+import ConfirmModal from '../components/ui/ConfirmModal.vue'
 // import StatCard from '../components/dashboard/StatCard.vue'
 import { useExpenseStore } from '../stores/expenseStore'
 
 const expenseStore = useExpenseStore()
+
+const showDeleteConfirm = ref(false)
+const deleteTargetId = ref(null)
+
+const confirmDeleteExpense = (id) => {
+  deleteTargetId.value = id
+  showDeleteConfirm.value = true
+}
+
+const handleDeleteExpense = () => {
+  if (deleteTargetId.value !== null) {
+    expenseStore.deleteExpense(deleteTargetId.value)
+    deleteTargetId.value = null
+  }
+  showDeleteConfirm.value = false
+}
 
 const form = ref({
   amount: '',
@@ -145,12 +162,6 @@ const submitExpense = () => {
   }
 }
 
-const deleteExpense = (id) => {
-  if (confirm('Delete this expense?')) {
-    expenseStore.deleteExpense(id)
-  }
-}
-
 const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString('en-US', {
     month: 'short',
@@ -172,3 +183,12 @@ onMounted(() => {
   }
 })
 </script>
+
+    <!-- Delete Confirmation Modal -->
+    <ConfirmModal
+      :visible="showDeleteConfirm"
+      title="Confirm Delete"
+      message="Are you sure you want to delete this expense? This action cannot be undone."
+      @confirm="handleDeleteExpense"
+      @cancel="showDeleteConfirm = false"
+    />

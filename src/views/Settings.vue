@@ -157,7 +157,7 @@
                 <font-awesome-icon icon="edit" class="w-4 h-4" />
               </button>
               <button 
-                @click="deleteCategory('order', cat.id)"
+                @click="confirmDeleteCategory('order', cat.id)"
                 class="text-red-600 hover:text-red-800"
                 title="Delete"
               >
@@ -260,7 +260,7 @@
                 <font-awesome-icon icon="edit" class="w-4 h-4" />
               </button>
               <button 
-                @click="deleteCategory('expense', cat)"
+                @click="confirmDeleteCategory('expense', cat)"
                 class="text-red-600 hover:text-red-800"
                 title="Delete"
               >
@@ -305,7 +305,7 @@
                 <font-awesome-icon icon="edit" class="w-4 h-4" />
               </button>
               <button 
-                @click="deleteCategory('recipe', cat)"
+                @click="confirmDeleteCategory('recipe', cat)"
                 class="text-red-600 hover:text-red-800"
                 title="Delete"
               >
@@ -627,16 +627,25 @@ const startEdit = (type, id) => {
   }
 }
 
-const deleteCategory = (type, id) => {
-  if (confirm('Delete category?')) {
-    if (type === 'order') {
-      orderStore.deleteCategory(id)
-    } else if (type === 'expense') {
-      expenseStore.deleteCategory(id)
-    } else {
-      recipeStore.deleteCategory(id)
-    }
-  }
+const showDeleteCatConfirm = ref(false)
+const deleteCatTarget = ref(null) // { type, id }
+
+const confirmDeleteCategory = (type, id) => {
+  deleteCatTarget.value = { type, id }
+  showDeleteCatConfirm.value = true
+}
+
+const handleDeleteCategory = () => {
+  if (!deleteCatTarget.value) return
+  const { type, id } = deleteCatTarget.value
+  if (type === 'order')
+    orderStore.deleteCategory(id)
+  else if (type === 'expense')
+    expenseStore.deleteCategory(id)
+  else if (type === 'recipe')
+    recipeStore.deleteCategory(id)
+  deleteCatTarget.value = null
+  showDeleteCatConfirm.value = false
 }
 
 const logout = () => {
@@ -700,3 +709,6 @@ const cancelDeleteAnnouncement = () => {
   showDeleteAnnConfirm.value = false
 }
 </script>
+
+      <ConfirmModal :visible="showDeleteAnnConfirm" title="Delete Announcement" message="Are you sure you want to delete this announcement? This action cannot be undone." @confirm="confirmDeleteAnnouncement" @cancel="cancelDeleteAnnouncement" />
+      <ConfirmModal :visible="showDeleteCatConfirm" title="Delete Category" message="Are you sure you want to delete this category? This action cannot be undone." @confirm="handleDeleteCategory" @cancel="showDeleteCatConfirm = false" />
