@@ -10,7 +10,7 @@
           </div> -->
           <div>
             <p class="mb-1 text-sm text-gray-600">Total Expenses</p>
-            <p class="text-4xl font-bold text-red-600">{{ expenseStore.totalExpenses.toFixed(2) }} tk</p>
+            <p class="text-4xl font-bold text-red-600">{{ Math.round(expenseStore.totalExpenses) }} tk</p>
           </div>
         </div>
       </div>
@@ -98,7 +98,7 @@
               </p>
             </div>
             <div class="flex items-center space-x-4">
-              <span class="font-semibold text-red-600">{{ expense.amount.toFixed(2) }} tk</span>
+              <span class="font-semibold text-red-600">{{ Math.round(expense.amount) }} tk</span>
               <div class="relative">
                 <button
                   @click="openDropdown === expense.id ? (openDropdown = null) : (openDropdown = expense.id)"

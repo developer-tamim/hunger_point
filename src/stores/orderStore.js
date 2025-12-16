@@ -4,10 +4,15 @@ import { ref, computed } from 'vue'
 export const useOrderStore = defineStore('orders', () => {
   const orders = ref(JSON.parse(localStorage.getItem('orders')) || [])
 
+  // const categories = ref(JSON.parse(localStorage.getItem('categories')) || [
+  //   { id: 1, name: 'Burger', icon: '🍔', subcategories: [{ name: 'Classic', price: 5.99 }, { name: 'Cheese', price: 6.99 }], price: 0 },
+  //   { id: 2, name: 'Drinks', icon: '🥤', subcategories: [{ name: 'Coke', price: 1.99 }, { name: 'Sprite', price: 1.99 }], price: 0 },
+  //   { id: 3, name: 'Snacks', icon: '🍟', subcategories: [{ name: 'Fries', price: 2.99 }], price: 0 }
+  // ])
   const categories = ref(JSON.parse(localStorage.getItem('categories')) || [
-    { id: 1, name: 'Burger', icon: '🍔', subcategories: [{ name: 'Classic', price: 5.99 }, { name: 'Cheese', price: 6.99 }], price: 0 },
-    { id: 2, name: 'Drinks', icon: '🥤', subcategories: [{ name: 'Coke', price: 1.99 }, { name: 'Sprite', price: 1.99 }], price: 0 },
-    { id: 3, name: 'Snacks', icon: '🍟', subcategories: [{ name: 'Fries', price: 2.99 }], price: 0 }
+    { id: 1, name: 'Burger',  subcategories: [{ name: 'Classic', price: 5.99 }, { name: 'Cheese', price: 6.99 }], price: 0 },
+    { id: 2, name: 'Drinks',  subcategories: [{ name: 'Coke', price: 1.99 }, { name: 'Sprite', price: 1.99 }], price: 0 },
+    { id: 3, name: 'Snacks',  subcategories: [{ name: 'Fries', price: 2.99 }], price: 0 }
   ])
 
   const items = ref(JSON.parse(localStorage.getItem('items')) || [

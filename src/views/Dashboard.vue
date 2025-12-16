@@ -35,7 +35,7 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard
           title="Sales (Today)"
-          :value="`$${Number(salesToday || 0).toFixed(2)}`"
+          :value="`$${Math.round(Number(salesToday || 0))}`"
           icon="💰"
           color="bg-green-50 text-green-700"
           caption="Total sales for today"
@@ -49,14 +49,14 @@
         />
         <KpiCard
           title="Expenses (Today)"
-          :value="`$${Number(expensesToday || 0).toFixed(2)}`"
+          :value="`$${Math.round(Number(expensesToday || 0))}`"
           icon="💸"
           color="bg-red-50 text-red-700"
           caption="Total expenses today"
         />
         <KpiCard
           title="Net Profit"
-          :value="`$${Number(netProfit || 0).toFixed(2)}`"
+          :value="`$${Math.round(Number(netProfit || 0))}`"
           icon="📈"
           color="bg-purple-50 text-purple-700"
           caption="Sales minus expenses"
@@ -78,7 +78,7 @@
               :subtitle="
                 o.items.map((i) => `${i.quantity}× ${i.name}`).join(', ')
               "
-              :rightText="`$${Number(o.total || 0).toFixed(2)}`"
+              :rightText="`$${Math.round(Number(o.total || 0))}`"
               rightColor="text-green-600"
             />
           </div>
@@ -95,7 +95,7 @@
               :key="e.id"
               :title="e.category"
               :subtitle="e.description"
-              :rightText="`$${Number(e.amount || 0).toFixed(2)}`"
+              :rightText="`$${Math.round(Number(e.amount || 0))}`"
               rightColor="text-red-600"
             />
           </div>

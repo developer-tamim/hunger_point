@@ -144,7 +144,7 @@
             <div>
               <div class="font-medium">{{ cat.name }}</div>
                 <div class="text-sm text-gray-500">
-                  <span v-if="cat.subcategories && cat.subcategories.length">Items: {{ cat.subcategories.map(sc => typeof sc === 'string' ? sc : sc.name + (sc.price ? ' (' + Number(sc.price).toFixed(2) + 'tk)' : '')).join(', ') }}</span>
+                  <span v-if="cat.subcategories && cat.subcategories.length">Items: {{ cat.subcategories.map(sc => typeof sc === 'string' ? sc : sc.name + (sc.price ? ' (' + Math.round(Number(sc.price)) + 'tk)' : '')).join(', ') }}</span>
                   <span v-if="typeof cat.price !== 'undefined'"> • Price: {{ cat.price }} tk</span>
                 </div>
             </div>
@@ -202,7 +202,7 @@
                           <button type="button" @click="cancelItemEdit" class="ml-1 px-2 py-1 bg-gray-200 rounded-md hover:bg-gray-300">Cancel</button>
                         </template>
                         <template v-else>
-                          <span class="mr-2">{{ it.name }} <small class="text-xs text-gray-500">{{ it.price ? Number(it.price).toFixed(2) : '00' }} tk</small></span>
+                          <span class="mr-2">{{ it.name }} <small class="text-xs text-gray-500">{{ it.price ? Math.round(Number(it.price)) : '0' }} tk</small></span>
                           <button type="button" @click="startItemEdit(idx)" class="text-gray-500 hover:text-gray-700 ml-2">✎</button>
                           <button type="button" @click="removeItem(idx)" class="text-gray-500 hover:text-gray-700 ml-2">×</button>
                         </template>
@@ -540,7 +540,7 @@ const submitAddOrderCategory = () => {
   if (isOrderEditing.value && editingOrderId.value) {
     orderStore.updateCategory(editingOrderId.value, { name, subcategories: items, price })
   } else {
-    const newCat = orderStore.addCategory(name, '🍔', items, price)
+    const newCat = orderStore.addCategory(name, items, price)
     // make sure store items are synced inside addCategory
   }
   closeAddOrderModal()

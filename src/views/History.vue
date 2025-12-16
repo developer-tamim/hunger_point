@@ -31,8 +31,8 @@
         <!-- Order Summary -->
         <div class="bg-white rounded-xl shadow-sm p-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
           <div><p class="text-sm text-gray-600">Total Orders</p><p class="text-2xl font-bold text-orange-600">{{ filteredOrders.length }}</p></div>
-          <div><p class="text-sm text-gray-600">Total Sales</p><p class="text-2xl font-bold text-green-600">{{ orderTotal.toFixed(2) }} tk</p></div>
-          <div><p class="text-sm text-gray-600">Average Order</p><p class="text-2xl font-bold text-blue-600">{{ orderAvg.toFixed(2) }} tk</p></div>
+          <div><p class="text-sm text-gray-600">Total Sales</p><p class="text-2xl font-bold text-green-600">{{ Math.round(orderTotal) }} tk</p></div>
+          <div><p class="text-sm text-gray-600">Average Order</p><p class="text-2xl font-bold text-blue-600">{{ Math.round(orderAvg) }} tk</p></div>
         </div>
 
         <!-- Order List -->
@@ -88,7 +88,7 @@
                   </div>
                 </div>
                 <div class="text-right space-y-2">
-                  <p class="text-lg font-bold text-green-600">{{ order.total.toFixed(2) }} tk</p>
+                  <p class="text-lg font-bold text-green-600">{{ Math.round(order.total) }} tk</p>
                   <div class="flex gap-2 justify-end mt-3">
                     <button
                       @click="startEditOrder(order)"
@@ -121,8 +121,8 @@
         <!-- Expense Summary -->
         <div class="bg-white rounded-xl shadow-sm p-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
           <div><p class="text-sm text-gray-600">Total Expenses</p><p class="text-2xl font-bold text-red-600">{{ filteredExpenses.length }}</p></div>
-          <div><p class="text-sm text-gray-600">Total Amount</p><p class="text-2xl font-bold text-red-600">{{ expenseTotal.toFixed(2) }} tk</p></div>
-          <div><p class="text-sm text-gray-600">Average Expense</p><p class="text-2xl font-bold text-orange-600">{{ expenseAvg.toFixed(2) }} tk</p></div>
+          <div><p class="text-sm text-gray-600">Total Amount</p><p class="text-2xl font-bold text-red-600">{{ Math.round(expenseTotal) }} tk</p></div>
+          <div><p class="text-sm text-gray-600">Average Expense</p><p class="text-2xl font-bold text-orange-600">{{ Math.round(expenseAvg) }} tk</p></div>
         </div>
 
         <!-- Expense List -->
@@ -177,7 +177,7 @@
                   <p v-if="expense.vendor" class="text-xs text-gray-500 mt-1">Vendor: {{ expense.vendor }}</p>
                 </div>
                 <div class="text-right space-y-2">
-                  <h3 class="mt-2 font-semibold text-red-800">{{ expense.amount.toFixed(2) }} tk</h3>
+                  <h3 class="mt-2 font-semibold text-red-800">{{ Math.round(expense.amount) }} tk</h3>
                   <div class="flex gap-2 justify-end mt-3">
                     <button
                       @click="startEditExpense(expense)"

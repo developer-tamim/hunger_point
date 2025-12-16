@@ -41,7 +41,7 @@
               Total Orders: {{ filteredOrders.length }}
             </p>
             <p class="text-lg font-bold text-green-600">
-              {{ dailyTotal.toFixed(2) }} tk
+              {{ Math.round(dailyTotal) }} tk
             </p>
           </div>
         </div>
@@ -88,7 +88,7 @@
                   {{ order.subcategory || '-' }}
                 </td> -->
                 <td class="py-3 px-4 font-semibold">
-                  {{ order.total.toFixed(2) }} tk
+                  {{ Math.round(order.total) }} tk
                 </td>
                 <td class="py-3 px-4 text-sm text-gray-600">
                   {{ formatTime(order.createdAt) }}
@@ -201,7 +201,7 @@
                     selectedItem === (typeof sc === 'string' ? sc : sc.name) ? 'bg-orange-50 border-orange-500' : 'border-gray-300 hover:bg-gray-50'
                   ]"
                 >
-                  {{ typeof sc === 'string' ? sc : (sc.name + (sc.price ? ' (' + sc.price.toFixed(2) + 'tk)' : '')) }}
+                  {{ typeof sc === 'string' ? sc : (sc.name + (sc.price ? ' (' + Math.round(sc.price) + 'tk)' : '')) }}
                 </button>
               </div>
             </div> -->
@@ -218,7 +218,7 @@
                   <div>
                     <p class="font-medium">{{ item.name }}</p>
                     <p class="text-sm text-gray-600">
-                      {{ item.price.toFixed(2) }} tk
+                      {{ Math.round(item.price) }} tk
                     </p>
                   </div>
                   <div class="flex items-center space-x-3">
@@ -229,7 +229,13 @@
                     >
                       -
                     </button>
-                    <span class="w-8 text-center">{{ getQty(item) }}</span>
+                    <input
+                      type="number"
+                      :value="getQty(item)"
+                      @input="(e) => setQty(item, parseInt(e.target.value) || 0)"
+                      class="w-12 text-center border rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      min="0"
+                    />
                     <button
                       type="button"
                       @click="incQty(item)"
@@ -252,14 +258,14 @@
                   class="flex justify-between"
                 >
                   <span>{{ it.quantity }}× {{ it.name }}</span>
-                  <span>{{ (it.quantity * it.price).toFixed(2) }} tk</span>
+                  <span>{{ Math.round(it.quantity * it.price) }} tk</span>
                 </div>
                 <div
                   class="border-t pt-2 mt-2 flex justify-between font-semibold"
                 >
                   <span>Total:</span>
                   <span class="text-orange-600"
-                    >{{ orderTotal.toFixed(2) }} tk</span
+                    >{{ Math.round(orderTotal) }} tk</span>
                   >
                 </div>
               </div>
@@ -399,6 +405,19 @@ const decQty = (item) => {
   if (existing.quantity > 1) existing.quantity--;
   else
     selectedItems.value = selectedItems.value.filter((i) => i.id !== item.id);
+};
+
+const setQty = (item, qty) => {
+  if (qty <= 0) {
+    selectedItems.value = selectedItems.value.filter((i) => i.id !== item.id);
+  } else {
+    const existing = selectedItems.value.find((i) => i.id === item.id);
+    if (existing) {
+      existing.quantity = Math.floor(qty);
+    } else {
+      selectedItems.value.push({ ...item, quantity: Math.floor(qty) });
+    }
+  }
 };
 
 const orderTotal = computed(() =>
